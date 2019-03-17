@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>MON SUPER JEU</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+
+    <canvas id="mon_jeu"></canvas>
+
+    <script type="text/javascript">
+
+      window.onload = create; // On appelle la fonction "create" lorsque la page s'est chargée
+
+      /* ================= Section: VARIABLE ================= */
+
+        // Les variables déclarés ici seront accessibles dans tout le Script
+        var canvas, ctx, world, mouse;
+
+      /* =============== Section_End: VARIABLE =============== */
+
+
+
+      /* ================= Section: CLASS ================= */
+
+        // on rajoutera toutes nos classes ici ;)
+        function Camera(world) {
+          this.world = world;
+          this.x = 0;
+          this.y = 0;
+        }
+        Camera.prototype.apply = function () {
+
+          // cette méthode sera appelé à chaque fois juste avant de dessiner une entité
+
+          ctx.setTransform(1,0,0,1,0,0); // On reset toutes les transformations
+
+          // et on fait une translation
+          ctx.translate(
+            canvas.width/2+this.x,
+            canvas.height/2+this.y
+          );
+        };
+
+        function Mouse() {
+          var _this = this;
+          this.x = 0;
+          this.y = 0;
+          this.isDown = false;
+          window.addEventListener('mousemove',function(event) {
+            _this.x = event.clientX;
+            _this.y = event.clientY;
+          });
+          window.addEventListener('mousedown',function(event) {
+            _this.isDown = true;
+          });
+          window.addEventListener('mouseup',function(event) {
+            _this.isDown = false;
+          });
+        }
+        Mouse.prototype.getAngle = function () {
+          var x = typeof x !== 'undefined' ? x : this.x;
+          var y = typeof y !== 'undefined' ? y : this.y;
+          return Math.atan2(y-canvas.height/2,x-canvas.width/2);
+        };
+
+        function World() {
+          this.camera = new Camera(this);
+          this.entity = []; // les serpents
+          this.foods = []; // la bouffe
+        }
+        World.prototype.draw = function () {
+
+          // Cette méthode sera appelé au moins 30 fois par seconde pour dessiner l'image
+
+          // On efface et resize le canvas, je rappelle que la variable canvas est accessible partout
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+
+          // On dessine la bouffe en 1er
+          for (var i = 0; i < this.foods.length; i++) {
+            this.foods[i].draw();
+          }
+
+          // On dessine ensuite les serpents
+          for (var i = 0; i < this.entity.length; i++) {
+            this.entity[i].draw();
+          }
+
+        };
+
+        function Snake(world, settings) {
+
+          // On essai de récupérer d'eventuelle "settings", si cette variable n'existe pas, on assigne un objet vide
+          // Ceci nous permettra de ne pas avoir d'erreur dans le cas où l'objet settings n'est pas défini
+          var opts = settings || {};
+
+          this.world = world;
+
+          this.name = opts.name || 'Unamed Snake';
+          this.length = opts.length || 10; // on démarre à 10 au début
+
+          this.color = opts.color || '#00f'; // la couleur de notre serpent
+
+          this.speed = opts.speed || 5;
+
+          this.snakepart = []; // on va stocker ici toutes les données du corps du serpent, chaque arete en gros
+
+          this.snakepart.push({x:0,y:0}); // on ajoute la tê xDD
+          for (var i = 0; i < 100; i++) {
+            this.snakepart.push({x:0,y:0}); // pour l'exemple
+          }
+
+          this.world.entity.push(this); // on ajoute notre serpent dans le monde (logique xD)
+        }
+        Snake.prototype.draw = function () {
+
+          var angle = mouse.getAngle(); // on récupère l'angle par rapport au centre de l'écran
+
+          // on bouge la tete du serpent vers la souris
+          this.snakepart[0].x += this.speed * Math.cos(angle);
+          this.snakepart[0].y += this.speed * Math.sin(angle);
+
+          // on positionne la caméra sur la tête du serpent
+          this.world.camera.x = -this.snakepart[0].x;
+          this.world.camera.y = -this.snakepart[0].y;
+
+          this.world.camera.apply(); // et oui, il ne fallait pas l'oublier celui-là !
+
+          // on fait une boucle à l'envers ici car il est préferable de dessiner la tête en dernier pour qu'elle soit "au-dessus"
+          var i = this.snakepart.length-1;
+          var j = 0;
+          while (i>=0) {
+            if (j>0) {
+              var angle = Math.atan2(this.snakepart[j-1].y-this.snakepart[j].y,this.snakepart[j-1].x-this.snakepart[j].x);
+              this.snakepart[j].x = this.snakepart[j-1].x - this.speed * Math.cos(angle);
+              this.snakepart[j].y = this.snakepart[j-1].y - this.speed * Math.sin(angle);
+            }
+            ctx.beginPath();
+            ctx.arc(this.snakepart[i].x,this.snakepart[i].y,10,0,2*Math.PI,false); // on dessine un cercle
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            --i;
+            ++j;
+          }
+
+        };
+
+      /* =============== End_Section: CLASS =============== */
+
+
+
+      // La fonction "create" sera en quelque sorte le point d'entré de notre script, c'est ici que nous allons créer tout nos objets
+      function create() {
+        canvas = document.getElementById('mon_jeu'),
+        ctx    = canvas.getContext('2d');
+
+        mouse = new Mouse();
+        world = new World();
+
+        var mon_serpent = new Snake(world);
+
+        update(); // on appelle la fonction update
+      }
+
+      // cette fonction va être exécuter en boucle
+      function update() {
+        window.requestAnimationFrame(update);
+
+        world.draw();
+      }
+
+    </script>
+
+  </body>
+</html>
