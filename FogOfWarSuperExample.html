@@ -24,6 +24,18 @@
         text-align: center;
         transform: translateX(-50%);
       }
+      .error {
+        position: fixed;
+        top: 50px;
+        left: 50px;
+        color: #f00;
+        font: 14px Verdana;
+        background: rgba(0,0,0,0.7);
+        border-radius: 10px;
+        padding: 10px;
+        width: 300px;
+        text-align: center;
+      }
     </style>
   </head>
   <body style="background:#08f;">
@@ -32,6 +44,10 @@
       Keep left click and move mouse to move<br />
       Your units follow your mouse<br />
       Press A to add units
+    </div>
+
+    <div id="error" style="display: none;" class="error">
+      There is already a unit at this location (mouse position), put your mouse elsewhere
     </div>
 
     <script type="text/javascript">
@@ -90,7 +106,18 @@
           window.onkeypress = function(event) {
             if (event.key.toLowerCase() == 'a') {
               var mouse = game.camera.getMouseRelativeCoordinateScale();
-              game.player.add({x:mouse.x,y:mouse.y});
+              var test = new Unit(game,game.player,-1,-1,{x:mouse.x,y:mouse.y});
+              if (!game.isCollide(test)) {
+                game.player.add({x:mouse.x,y:mouse.y});
+              } else {
+                try {
+                  clearTimeout(window.errortimeout);
+                } catch (e) {}
+                document.getElementById('error').style.display = 'block';
+                window.errortimeout = setTimeout(function () {
+                  document.getElementById('error').style.display = 'none';
+                }, 2000);
+              }
             }
           }
         }, 500);
