@@ -142,6 +142,7 @@
 
         // Une méthode Clip
         clip() {
+          this.game.ctx.moveTo(this.x,this.y);
           this.game.ctx.arc(this.x,this.y,this.visibility,0,2*Math.PI,false);
         }
 
@@ -284,6 +285,7 @@
               this.units[test[i].id].explore();
             } else {
               this.units[test[i].id].move(this.angle);
+              this.units[test[i].id].explore();
             }
           }
 
@@ -347,14 +349,7 @@
           this.shadow_ctx.save();
           this.shadow_ctx.globalCompositeOperation = 'destination-out';
           this.shadow_ctx.beginPath();
-          this.shadow_ctx.arc(
-            x,
-            y,
-            radius,
-            0,
-            2*Math.PI,
-            false
-          );
+          this.shadow_ctx.arc(x,y,radius,0,2*Math.PI,false);
           this.shadow_ctx.fillStyle = '#000000';
           this.shadow_ctx.fill();
           this.shadow_ctx.restore();
