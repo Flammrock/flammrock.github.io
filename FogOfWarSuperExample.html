@@ -45,8 +45,8 @@
           var game = new Game(4000,4000);
 
           // Enemy Players
-          game.addPlayer('#ff5d00');
-          game.addPlayer('#ff0000');
+          game.addPlayer('#ff5d00',10);
+          game.addPlayer('#ff0000',15);
 
           window.onmousemove = function(event) {
             var rect = game.canvas.getBoundingClientRect();
@@ -285,7 +285,6 @@
               this.units[test[i].id].explore();
             } else {
               this.units[test[i].id].move(this.angle);
-              this.units[test[i].id].explore();
             }
           }
 
@@ -455,8 +454,12 @@
 
         }
 
-        addPlayer(color) {
+        addPlayer(color,nb) {
           this.other_players[this.player_id] = new Player(this,this.player_id,color);
+          var test = new Unit(this,this.other_players[this.player_id],0);
+          for (var i = 0; i < nb; i++) {
+            this.other_players[this.player_id].add({x:this.other_players[this.player_id].x+i*(test.width+1)});
+          }
           this.player_id++;
           this.absolute_id++;
         }
