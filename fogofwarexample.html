@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Fog Of War</title>
+  </head>
+  <body style="background:#08f;">
+
+    <script type="text/javascript">
+
+      var mouse = {x:0,y:0};
+
+      window.onload = function() {
+        var game = new Game(500,500);
+        window.onmousemove = function(event) {
+          var rect = game.canvas.getBoundingClientRect();
+          mouse.x = event.clientX - rect.left;
+          mouse.y = event.clientY - rect.top;
+        }
+      }
+
+      class FogOfWar {
+
+        constructor(game) {
+
+          this.game = game; // game est un instancier de la classe Game
+
+          // On créé un simple canvas
+          this.canvas = document.createElement('canvas');
+
+          // On fais en sorte qu'il soit de la même taille que le canvas de notre jeu
+          this.canvas.width = this.game.canvas.width;
+          this.canvas.height = this.game.canvas.height;
+
+          // On récupère le contexte 2D
+          this.ctx = this.canvas.getContext('2d');
+
+          // On colorie le tout en Noir
+          this.ctx.fillStyle = '#000000';
+          this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
+
+          // Et on passe en mode destination-out
+          this.ctx.globalCompositeOperation = 'destination-out';
+
+          // On créé un autre canvas pour y stocker les zones d'ombres
+          this.shadow = document.createElement('canvas');
+          this.shadow.width = this.game.canvas.width;
+          this.shadow.height = this.game.canvas.height;
+          this.shadow_ctx = this.shadow.getContext('2d');
+          this.shadow_ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          this.shadow_ctx.fillRect(0, 0, this.shadow.width, this.shadow.height);
+
+        }
+
+        // Une simple méthode pour explorer le "Fog Of War"
+        explore(x,y,radius) {
+
+          // on dessine juste un cercle
+          this.ctx.beginPath();
+          this.ctx.lineWidth = 0;
+          this.ctx.arc(x,y,radius,0,2*Math.PI,false);
+          this.ctx.fill();
+
+          // On dessine juste un cercle en mode destination-out
+          this.shadow_ctx.save();
+          this.shadow_ctx.globalCompositeOperation = 'destination-out';
+          this.shadow_ctx.beginPath();
+          this.shadow_ctx.arc(
+            x,
+            y,
+            radius,
+            0,
+            2*Math.PI,
+            false
+          );
+          this.shadow_ctx.fillStyle = '#000000';
+          this.shadow_ctx.fill();
+          this.shadow_ctx.restore();
+
+        }
+
+        clearVisibility() {
+
+          // On efface tout
+          this.shadow_ctx.clearRect(0,0,this.shadow.width,this.shadow.height);
+
+          // Et On dessine tout en Noir transparent
+          this.shadow_ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          this.shadow_ctx.fillRect(0,0,this.shadow.width,this.shadow.height);
+
+        }
+
+        // Une fonction update appelé par le jeu
+        update() {
+
+          // On dessine d'abord notre masque
+          this.game.ctx.drawImage(this.canvas,0,0);
+
+          // Puis on dessine les zones déjà exploré par le joueur
+          this.game.ctx.drawImage(this.shadow,0,0);
+
+        }
+
+      }
+
+      class Game {
+
+        constructor(width, height) {
+
+          this.canvas = document.createElement('canvas');
+          this.canvas.width = width || 300;
+          this.canvas.height = height || 300;
+
+          this.ctx = this.canvas.getContext('2d');
+
+          document.body.appendChild(this.canvas);
+
+          this.fogOfWar = new FogOfWar(this);
+
+
+          this.background = new Image();
+          this.background.ready = false;
+          this.background.onload = function() {
+            this.ready = true;
+          };
+          this.background.src = 'http://www.ludumdare.com/compo/wp-content/uploads/2010/06/jolle-minild19-shot01.png';
+
+
+          this.update();
+
+        }
+
+        update() {
+
+          var _this = this;
+
+          this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+
+          if (this.background.ready) this.ctx.drawImage(this.background,0,0,this.canvas.width,this.canvas.height);
+
+          this.fogOfWar.clearVisibility();
+
+          this.fogOfWar.explore(mouse.x,mouse.y,50);
+
+          this.fogOfWar.update();
+
+          window.requestAnimationFrame(function(){_this.update()});
+
+        }
+
+      }
+
+    </script>
+  </body>
+</html>
