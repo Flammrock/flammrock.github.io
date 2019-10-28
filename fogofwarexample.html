@@ -10,14 +10,14 @@
 
       var mouse = {x:0,y:0};
 
-      window.onload = function() {
+      window.addEventListener('load',function() {
         var game = new Game(500,500);
         window.onmousemove = function(event) {
           var rect = game.canvas.getBoundingClientRect();
           mouse.x = event.clientX - rect.left;
           mouse.y = event.clientY - rect.top;
         }
-      }
+      });
 
       class FogOfWar {
 
