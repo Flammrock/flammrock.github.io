@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>PathFinding</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans&display=swap" rel="stylesheet">
+
+
+    <script src="babylon.custom.js?azaezrretrreyrtuyiyjhgfdsxcvbn,jkhgfd"></script>
+    <script src="api.js?fvxdgfvdfsdfdfsfbcvfcvc"></script>
+    <script src="app.js?bnbgdfsdfssdfdbvvbcfgn"></script>
+
+    <style>
+      html, body {
+          overflow: hidden;
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          padding: 0;
+      }
+
+      .background {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .load {
+        transition: opacity 1s ease;
+        position: fixed;
+        z-index: 9999999;
+        top: 0;
+        left: 0;
+        background: url(load.jpg) center no-repeat, #333;
+        background-size: cover;
+        width: 100vw;
+        height: 100vh;
+      }
+      .loadtext {
+        position: absolute;
+        bottom: 100px;
+        left: 100px;
+        font: 25px Verdana;
+        color: #ddd;
+      }
+      .load > .dark {
+        position: absolute;
+        z-index: -1;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+      }
+
+      #renderCanvas {
+          width: 100%;
+          height: 100%;
+          touch-action: none;
+      }
+
+      .canvasearth {
+        position: absolute;
+        z-index: 999999;
+        bottom: 0;
+        left: 0;
+        width: 40vw;
+        height: 40vh;
+      }
+
+      .UI {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      .UI > .UI-TopBar {
+        display: flex;
+        position: absolute;
+        font-family: 'Noto Sans', sans-serif;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 50px;
+        background: #ddd;
+      }
+
+      .UI > .UI-TopBar > .UI-Block {
+        display: flex;
+        color: #333;
+        border-right: 1px solid #999;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+      }
+
+    </style>
+
+  </head>
+  <body>
+
+    <div id="load" class="load">
+      <div class="dark"></div>
+      <span class="loadtext">
+        <span style="font-size: 50px;">PathFinding</span><sup><span style="position:relative;top:-8px;font-size:12px;">v0.0.2 Beta</span></sup><br />
+        Loading..
+      </span>
+    </div>
+
+    <div class="background">
+
+      <div id="UI" class="UI">
+
+        <canvas id="renderCanvas"></canvas>
+
+        <div class="UI-TopBar">
+
+          <div class="UI-Block" style="width: 150px;">
+            Time:&nbsp;&nbsp;&nbsp;<span id="time">00:00:00</span>
+          </div>
+
+          <div class="UI-Block" style="width: 220px;">
+            Lon:&nbsp;&nbsp;<span id="lon">0°</span>&nbsp;&nbsp;|&nbsp;&nbsp;Lat:&nbsp;&nbsp;<span id="lat">0°</span>
+          </div>
+
+        </div>
+
+
+      </div>
+
+    </div>
+
+  </body>
+</html>
