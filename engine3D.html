@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Engine 3D</title>
+    <style media="screen">
+      html, body {
+        margin: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+
+    <script type="text/javascript">
+
+
+      class Vertex2D {
+        constructor(x,y) {
+          this.x = x || 0;
+          this.y = y || 0;
+        }
+      }
+
+      class Vertex3D {
+        constructor(x,y,z) {
+          this.x = x || 0;
+          this.y = y || 0;
+          this.z = z || 0;
+        }
+      }
+
+      class Color {
+        constructor(r,g,b,a) {
+          this.r = r || 0;
+          this.g = g || 0;
+          this.b = b || 0;
+          this.a = a || 0;
+        }
+      }
+
+
+      class Cube {
+
+        constructor(position, size) {
+
+          var d = size / 2;
+
+          this.center = position;
+
+          this.vertices = [
+            new Vertex3D(position.x - d, position.y - d, position.z + d),
+            new Vertex3D(position.x - d, position.y - d, position.z - d),
+            new Vertex3D(position.x + d, position.y - d, position.z - d),
+            new Vertex3D(position.x + d, position.y - d, position.z + d),
+
+            new Vertex3D(position.x + d, position.y + d, position.z + d),
+            new Vertex3D(position.x + d, position.y + d, position.z - d),
+            new Vertex3D(position.x - d, position.y + d, position.z - d),
+            new Vertex3D(position.x - d, position.y + d, position.z + d)
+          ];
+
+          this.colors = [
+            new Color(255,0,0,255), new Color(255,0,0,255), new Color(255,0,0,255),
+            new Color(255,0,0,255), new Color(255,0,0,255), new Color(255,0,0,255),
+
+            new Color(255,255,0,255), new Color(0,255,255,255), new Color(255,0,255,255),
+            new Color(255,255,0,255), new Color(255,0,255,255), new Color(0,255,0,255),
+
+            new Color(0,0,255,255), new Color(0,0,255,255), new Color(0,0,255,255),
+            new Color(0,0,255,255), new Color(0,0,255,255), new Color(0,0,255,255),
+
+            new Color(255,255,0,255), new Color(255,255,0,255), new Color(255,255,0,255),
+            new Color(255,255,0,255), new Color(255,255,0,255), new Color(255,255,0,255),
+
+            new Color(255,0,255,255), new Color(255,0,255,255), new Color(255,0,255,255),
+            new Color(255,0,255,255), new Color(255,0,255,255), new Color(255,0,255,255),
+
+            new Color(0,255,255,255), new Color(0,255,255,255), new Color(0,255,255,255),
+            new Color(0,255,255,255), new Color(0,255,255,255), new Color(0,255,255,255)
+
+         ];
+
+          this.indices = [
+            0,1,2,
+            0,2,3,
+
+            4,5,6,
+            4,6,7,
+
+            0,7,6,
+            0,6,1,
+
+            3,5,4,
+            3,2,5,
+
+            0,4,7,
+            0,3,4,
+
+            1,6,5,
+            1,5,2
+          ];
+
+        }
+
+      }
+
+
+      class DepthBuffer {
+        constructor(width, height) {
+          this.data = new Uint16Array(width * height);
+          this.width = width;
+          this.height = height;
+        }
+        clear() {
+          this.data.fill(65535);
+        }
+        get(x,y) {
+          return this.data[y * this.width + x] / 65535;
+        }
+        set(x,y,v) {
+          this.data[y * this.width + x] = (v * 65535) | 0;
+        }
+        test(x,y,v) {
+          var value = (v * 65535) | 0;
+          if (value < 0 || value > 65535) {
+            return false;
+          }
+          var index = y * this.width + x;
+          if (value < this.data[index]) {
+            this.data[index] = value;
+            return true;
+          }
+          return false;
+        }
+      }
+
+      class Mouse {
+        constructor() {
+          this.x = 0;
+          this.y = 0;
+          this.down = false;
+        }
+      }
+
+
+      class Engine3D {
+
+        constructor() {
+          this.canvas = document.createElement('canvas');
+          this.ctx = this.canvas.getContext('2d');
+
+          document.body.appendChild(this.canvas);
+
+          this.mouse = new Mouse();
+
+          this.Far = -100000;
+          this.Near = 100000;
+
+          this.items = {0:new Cube(new Vertex3D(0,0,0),100)};
+
+          this.translate(this.items[0], new Vertex3D(-100,-100,-100));
+
+          this.rotate(this.items[0], new Vertex3D(0,0,1), 3*Math.PI/4);
+          this.rotate(this.items[0], new Vertex3D(1,0,0), Math.PI/4);
+
+          this.depthBuffer = null;
+
+          this.startEvent();
+          this.update();
+        }
+
+        startEvent() {
+          var _this = this;
+          this.canvas.addEventListener('mousedown', function(evt){
+            _this.mouse.down = true;
+            _this.mouse.x = evt.clientX;
+            _this.mouse.y = evt.clientY;
+          });
+          document.addEventListener('mousemove', function(evt){
+            if (_this.mouse.down) {
+              var theta = (evt.clientX - _this.mouse.x) * Math.PI / 360;
+              var phi = (evt.clientY - _this.mouse.y) * Math.PI / 180;
+
+              _this.rotate(_this.items[0], new Vertex3D(0,0,1), -theta);
+              _this.rotate(_this.items[0], new Vertex3D(1,0,0), phi);
+
+              _this.mouse.x = evt.clientX;
+              _this.mouse.y = evt.clientY;
+            }
+          });
+          document.addEventListener('mouseup', function(evt){
+            _this.mouse.down = false;
+          });
+        }
+
+        rotate(item, axis, angle) {
+
+          // on pré-calcule
+          var a = axis;
+          var s = Math.sin(angle);
+          var c = Math.cos(angle);
+          var t = 1-c;
+          var x = a.x, y = a.y, z = a.z;
+
+          // la matrice de rotation
+          var r = [
+              [ t*x*x + c,   t*x*y - s*z, t*x*z + s*y ],
+              [ t*x*y + s*z, t*y*y + c,   t*y*z - s*x ],
+              [ t*x*z - s*y, t*y*z + s*x, t*z*z + c   ],
+          ];
+
+          // on applique cette matrice à l'ensemble de nos points
+          for (var i in item.vertices) {
+            if (item.vertices.hasOwnProperty(i)) {
+
+              var p = item.vertices[i];
+
+              // on se place au centre du monde
+              var px = p.x - item.center.x, py = p.y - item.center.y, pz = p.z - item.center.z;
+
+              // on fait la rotation
+              var rp = [
+                  r[0][0]*px + r[0][1]*py + r[0][2]*pz,
+                  r[1][0]*px + r[1][1]*py + r[1][2]*pz,
+                  r[2][0]*px + r[2][1]*py + r[2][2]*pz,
+              ];
+
+              item.vertices[i].x = rp[0] + item.center.x;
+              item.vertices[i].y = rp[1] + item.center.y;
+              item.vertices[i].z = rp[2] + item.center.z;
+            }
+          }
+
+        }
+
+        translate(item, v) {
+          item.center.x += v.x;
+          item.center.y += v.y;
+          item.center.z += v.z;
+          for (var i in item.vertices) {
+            if (item.vertices.hasOwnProperty(i)) {
+              item.vertices[i].x += v.x;
+              item.vertices[i].y += v.y;
+              item.vertices[i].z += v.z;
+            }
+          }
+        }
+
+        crossProduct(v0,v1,v2) {
+          return (v1.x - v0.x) * -(v2.y - v0.y) - -(v1.y - v0.y) * (v2.x - v0.x);
+        }
+
+        project(v) {
+          return new Vertex2D(v.x, v.z);
+        }
+
+        fillTriangle(imageData, v0, v1, v2, c0, c1, c2, z0, z1, z2) {
+          var minX = Math.floor(Math.min(v0.x, v1.x, v2.x));
+          var maxX = Math.ceil(Math.max(v0.x, v1.x, v2.x));
+          var minY = Math.floor(Math.min(v0.y, v1.y, v2.y));
+          var maxY = Math.ceil(Math.max(v0.y, v1.y, v2.y));
+
+          var data = imageData.data;
+          var width = imageData.width;
+
+          // on précalcul l'aire du parallélogramme definit par notre triangle
+          var area = this.crossProduct(v0, v1, v2);
+
+          // le fameux point P
+          var p = {};
+
+          // fragment est le pixel résultant avec tous les attributs de sommet interpolés
+          var fragment = new Color();
+
+          for (var y = minY; y < maxY; y++) {
+            for (var x = minX; x < maxX; x++) {
+
+              // on fait notre teste à partir du centre du pixel
+              p.x = x + 0.5; p.y = y + 0.5;
+
+              var w0 = this.crossProduct(v1, v2, p);
+              var w1 = this.crossProduct(v2, v0, p);
+              var w2 = this.crossProduct(v0, v1, p);
+
+              // si le point n'est pas à l'intérieur de notre triangle, on colorise pas le pixel
+              if (w0 < 0 || w1 < 0 || w2 < 0) {
+                continue;
+              }
+
+              fragment.r = (w0 * c0.r + w1 * c1.r + w2 * c2.r) / area;
+              fragment.g = (w0 * c0.g + w1 * c1.g + w2 * c2.g) / area;
+              fragment.b = (w0 * c0.b + w1 * c1.b + w2 * c2.b) / area;
+              fragment.a = (w0 * c0.a + w1 * c1.a + w2 * c2.a) / area;
+
+              var depth = (w0 * z0 + w1 * z1 + w2 * z2) / area;
+
+              // on récupère le pixel à partir de x et y
+              var index = (y * width + x) * 4;
+
+              if (this.depthBuffer.test(x, y, depth)) {
+
+                // et on le colorise avec le frament qu'on a calculé
+                data[index] = fragment.r | 0;
+                data[index + 1] = fragment.g | 0;
+                data[index + 2] = fragment.b | 0;
+                data[index + 3] = fragment.a | 0;
+
+              }
+
+            }
+          }
+        }
+
+        update() {
+
+          // on étend le scope
+          var _this = this;
+
+          // on demande à ce que cette fonction soit rappelée dès que le processeur est prêt
+          window.requestAnimationFrame(function(){_this.update();});
+
+          // on met à jour la taille du canvas
+          this.canvas.width = window.innerWidth;
+          this.canvas.height = window.innerHeight;
+
+          // on créer un depthBuffer de la taille du canvas
+          this.depthBuffer = new DepthBuffer(this.canvas.width, this.canvas.height);
+
+          // on l'initialise
+          this.depthBuffer.clear();
+
+          // on efface le canvas
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+          // on récupère l'objet imageData
+          var imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+
+          // on itère sur tout nos objets et on les dessine
+          for (var i in this.items) {
+            if (this.items.hasOwnProperty(i)) {
+
+              var item = this.items[i];
+
+              // on itère sur tout les triangles de cette objet
+              for (var i = 0; i < item.indices.length; i+=3) {
+
+                // on projette les points
+                var v0 = this.project(item.vertices[item.indices[i]]);
+                var v1 = this.project(item.vertices[item.indices[i+1]]);
+                var v2 = this.project(item.vertices[item.indices[i+2]]);
+
+                // on décale tout pour centrer au milieu du canvas
+                v0.x+=this.canvas.width/2; v0.y+=this.canvas.height/2;
+                v1.x+=this.canvas.width/2; v1.y+=this.canvas.height/2;
+                v2.x+=this.canvas.width/2; v2.y+=this.canvas.height/2;
+
+                // on calcule la profondeur
+                var z0 = (item.vertices[item.indices[i]].y - this.Near) / (this.Far - this.Near);
+                var z1 = (item.vertices[item.indices[i+1]].y - this.Near) / (this.Far - this.Near);
+                var z2 = (item.vertices[item.indices[i+2]].y - this.Near) / (this.Far - this.Near);
+
+                // et enfin, on dessine notre triangle
+                this.fillTriangle(imageData,v0,v1,v2,item.colors[i],item.colors[i+1],item.colors[i+2],z0,z1,z2);
+              }
+
+            }
+          }
+
+          // enfin, on applique imageData que l'on a modifié sur le canvas
+          this.ctx.putImageData(imageData, 0, 0);
+        }
+
+      }
+
+      // on n'oublie pas de créer notre engine
+      new Engine3D();
+
+
+    </script>
+
+  </body>
+</html>
