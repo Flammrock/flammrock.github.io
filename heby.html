@@ -1513,6 +1513,8 @@
           var _this = this;
 
           this.socket = new WebSocket('wss://192.168.1.50:9002',{
+            protocolVersion: 8,
+            origin: document.location.origin,
             rejectUnauthorized: false
           });
           this.socket.onopen = function(event) {_this.connection_onopen(event)};
