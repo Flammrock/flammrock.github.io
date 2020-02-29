@@ -1512,7 +1512,7 @@
 
           var _this = this;
 
-          this.socket = new WebSocket('ws://192.168.1.50:9002');
+          this.socket = new WebSocket('wss://192.168.1.50:9002');
           this.socket.onopen = function(event) {_this.connection_onopen(event)};
           this.socket.onclose = function(event) {_this.connection_onclose(event)};
           this.socket.onmessage = function(event) {_this.connection_onmessage(event)};
