@@ -817,15 +817,55 @@
 
       //####################################### TOOLBOX ##################################\\
 
-console.warn("loading mesh..");
+
       BABYLON.SceneLoader.Append(
             './objects/piper_pa18/',
             'piper_pa18.obj',
             engine.scene,
-            () => {
+            function(){
                 console.log('Mesh Loaded');
+            },
+            function(evt){
+
+              // onProgress
+              var loadedPercent = 0;
+              if (evt.lengthComputable) {
+                  loadedPercent = (evt.loaded * 100 / evt.total).toFixed();
+              } else {
+                  var dlCount = evt.loaded / (1024 * 1024);
+                  loadedPercent = Math.floor(dlCount * 100.0) / 100.0;
+              }
+              // assuming "loadingScreenPercent" is an existing html element
+              //document.getElementById("loadingScreenPercent").innerHTML = loadedPercent;
+              console.warn(loadedPercent);
+
+
             }
         );
+        BABYLON.SceneLoader.Append(
+              './objects/piper_pa18/',
+              'piper_pa18.obj',
+              engine.scene,
+              function(){
+                  console.log('Mesh Loaded');
+              },
+              function(evt){
+
+                // onProgress
+                var loadedPercent = 0;
+                if (evt.lengthComputable) {
+                    loadedPercent = (evt.loaded * 100 / evt.total).toFixed();
+                } else {
+                    var dlCount = evt.loaded / (1024 * 1024);
+                    loadedPercent = Math.floor(dlCount * 100.0) / 100.0;
+                }
+                // assuming "loadingScreenPercent" is an existing html element
+                //document.getElementById("loadingScreenPercent").innerHTML = loadedPercent;
+                console.warn(loadedPercent);
+
+
+              }
+          );
 
 
 
