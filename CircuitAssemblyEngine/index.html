@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CircuitAssemblyEngine</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Galada&family=Montserrat:wght@100;400&display=swap" rel="stylesheet">
+
+    <style>
+
+
+      :root {
+
+        --ICON_SIZE              : 64px;
+        --ICON_FONT_SIZE         : 30px;
+        --ICON_BACKGROUND        : #111;
+        --ICON_LIGHT_BACKGROUND  : #555;
+        --ICON_COLOR             : #fff;
+        --ICON_DARK_COLOR        : #bbb;
+
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-button {
+        width: 0px;
+        height: 0px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--ICON_COLOR);
+        border: 0px none var(--ICON_COLOR);
+        border-radius: 43px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--ICON_COLOR);
+      }
+      ::-webkit-scrollbar-thumb:active {
+        background: var(--ICON_DARK_COLOR);
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+        border: 0px none var(--ICON_COLOR);
+        border-radius: 50px;
+      }
+      ::-webkit-scrollbar-track:hover {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-track:active {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-corner {
+        background: transparent;
+      }
+
+      .switch {
+        display: inline-block;
+        position: relative;
+        width: 50px;
+        height: 25px;
+        border-radius: 20px;
+        background: #FB513D;
+        transition: background 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        vertical-align: middle;
+        cursor: pointer;
+      }
+      .switch::before {
+        content: '';
+        position: absolute;
+        top: 1px;
+        left: 2px;
+        width: 22px;
+        height: 22px;
+        background: var(--ICON_COLOR);
+        border-radius: 50%;
+        transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1), background 0.28s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .switch:active::before {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.28), 0 0 0 20px rgba(128,128,128,0.1);
+      }
+      input:checked + .switch {
+        background: #72da67;
+      }
+      input:checked + .switch::before {
+        left: 27px;
+        background: var(--ICON_COLOR);
+      }
+      input:checked + .switch:active::before {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.28), 0 0 0 20px rgba(0,150,136,0.2);
+      }
+
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      #canvas {
+        position: fixed;
+        width: 100vw;
+        height: 100vh;
+        top: 0;
+        left: 0;
+      }
+
+      #UI {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        left: 0;
+      }
+      #UI .icon {
+        transition: background 0.1s ease;
+        display: inline-block;
+        float: left;
+        margin: 0;
+        padding: 0;
+        position: relative;
+        width: var(--ICON_SIZE);
+        height: var(--ICON_SIZE);
+        background: var(--ICON_BACKGROUND);
+        color: var(--ICON_COLOR);
+      }
+      #UI .icon > i {
+        position: absolute;
+        font-size: var(--ICON_FONT_SIZE);
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%,-50%);
+      }
+      #UI .icon:hover {
+        background: var(--ICON_LIGHT_BACKGROUND);
+      }
+      #UI .icon.blue:hover {
+        background: #07f !important;
+      }
+      #UI .icon.green:hover {
+        background: #44D400 !important;
+      }
+      #UI .icon.orange:hover {
+        background: #FF8300 !important;
+      }
+      #UI .icon.none:hover {
+        background: var(--ICON_BACKGROUND) !important;
+      }
+      #UI > .UI-LEFT {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        top: var(--ICON_SIZE);
+        left: 0;
+      }
+      #UI > .UI-LEFT .icon {
+        display: block !important;
+      }
+
+      #TOOLBOX {
+        position: absolute;
+        z-index: 15;
+        top: calc(var(--ICON_SIZE) * 2);
+        right: var(--ICON_SIZE);
+        width: 30vw;
+        height: 0;
+        background: var(--ICON_BACKGROUND);
+        overflow: hidden;
+        transform: perspective(400px) rotateY(-20deg) rotateX(0deg);
+      }
+      #TOOLBOX.open {
+        animation: _3dopen 1s linear;
+        height: calc(100vh - var(--ICON_SIZE) * 4) !important;
+      }
+      #TOOLBOX.close {
+        animation: _3dclose 0.2s linear;
+      }
+      #TOOLBOX .caption {
+        position: relative;
+        display: flex;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: var(--ICON_SIZE);
+      }
+      #TOOLBOX .content {
+        position: relative;
+        padding: 20px;
+        color: var(--ICON_COLOR);
+        width: calc(100% - 40px);
+        height: calc(100% - var(--ICON_SIZE) - 40px);
+        overflow-x: hidden;
+        overflow-y: scroll;
+      }
+      #TOOLBOX .content .item, #TOOLBOX .content .item.large {
+        position: relative;
+        display: inline-block;
+        width: calc(33.3333333333333333333% - 20px);
+        margin: 5px;
+        background: var(--ICON_COLOR);
+        color: var(--ICON_BACKGROUND);
+        overflow: hidden;
+      }
+      #TOOLBOX .content .item.large {
+        width: calc(100% - 20px);
+      }
+      #TOOLBOX .content .item:before {
+        content: '';
+        display: block;
+        padding-bottom: 100%;
+      }
+      #TOOLBOX .content .item.large:before {
+        content: '';
+        display: block;
+        padding-bottom: 20%;
+      }
+      #TOOLBOX .content .item:after, #TOOLBOX .content .item.large:after {
+        content: '';
+        transition: opacity 0.3s ease;
+        position: absolute;
+        top: -25%;
+        left: -25%;
+        width: 150%;
+        height: 150%;
+        background: var(--ICON_BACKGROUND);
+        opacity: 0;
+      }
+      #TOOLBOX .content .item:hover:after, #TOOLBOX .content .item.large:hover:after {
+        opacity: 0.7;
+      }
+      #TOOLBOX .content .image {
+        position: absolute;
+        transition: width 0.2s ease, height 0.2s ease;
+        z-index: 1;
+        top: 50%;
+        left: 50%;
+        background: var(--local-image);
+        background-size: cover;
+        width: 100%;
+        height: 100%;
+        transform: translate(-50%,-50%);
+      }
+      #TOOLBOX .content .item:hover .image, #TOOLBOX .content .item.large:hover .image {
+        width: 200%;
+        height: 200%;
+      }
+      #TOOLBOX .content .title {
+        position: absolute;
+        z-index: 2;
+        bottom: 20px;
+        text-transform: uppercase;
+        left: 50%;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1vw;
+        color: #f00;
+        transform: translateX(-50%);
+      }
+      #TOOLBOX .title {
+        position: relative;
+        flex-grow: 1;
+        flex-basis: 50%;
+        font-family: 'Galada', cursive;
+        color: var(--ICON_COLOR);
+        font-size: var(--ICON_FONT_SIZE);
+        display: flex;
+        max-width: 100%;
+        overflow: hidden;
+        align-items: center;
+      }
+      #TOOLBOX .title span {
+        margin-left: 50px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+      #TOOLBOX .close {
+        transition: background 0.1s ease;
+        position: relative;
+        width: var(--ICON_SIZE);
+        background: #f00;
+        color: var(--ICON_COLOR);
+      }
+      #TOOLBOX .close:hover {
+        background: #d00;
+      }
+      #TOOLBOX .close > i {
+        position: absolute;
+        font-size: var(--ICON_FONT_SIZE);
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%,-50%);
+      }
+      #TOOLBOX .section {
+        position: absolute;
+        transition: left 0.2s ease, opacity 0.2s ease;
+        top: 0;
+        left: -100%;
+        opacity: 0;
+        width: 100%;
+      }
+      #TOOLBOX .section.show {
+        left: 10px;
+        opacity: 1;
+      }
+      @keyframes _3dopen {
+        0% {transform: perspective(400px) rotateY(-20deg) rotateX(90deg);}
+        50% {transform: perspective(400px) rotateY(-20deg) rotateX(-20deg);}
+        70% {transform: perspective(400px) rotateY(-20deg) rotateX(10deg);}
+        90% {transform: perspective(400px) rotateY(-20deg) rotateX(-5deg);}
+        100% {transform: perspective(400px) rotateY(-20deg) rotateX(0deg);}
+      }
+      @keyframes _3dclose {
+        0% {top: calc(var(--ICON_SIZE) * 2); height: calc(100vh - var(--ICON_SIZE) * 4);}
+        100% {top: 50%; height: 0;}
+      }
+
+      #SETTINGS {
+        transition: opacity 0.6s ease;
+        position: fixed;
+        opacity: 0;
+        top: 0;
+        left: 0;
+        z-index: 999999;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+      }
+      #SETTINGS.show {
+        opacity: 1 !important;
+      }
+      #SETTINGS > .lock {
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+      }
+      #SETTINGS > .content {
+        transition: top 0.6s ease;
+        position: absolute;
+        z-index: 2;
+        top: -100%;
+        left: 50%;
+        width: 30%;
+        height: 80%;
+        background: var(--ICON_BACKGROUND);
+        transform: translate(-50%,-50%);
+        overflow: hidden;
+      }
+      #SETTINGS > .content.show {
+        top: 50% !important;
+      }
+      #SETTINGS > .content .caption {
+        position: relative;
+        display: flex;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: var(--ICON_SIZE);
+      }
+      #SETTINGS > .content .caption .title {
+        position: relative;
+        flex-grow: 1;
+        flex-basis: 50%;
+        font-family: 'Galada', cursive;
+        color: var(--ICON_COLOR);
+        font-size: var(--ICON_FONT_SIZE);
+        display: flex;
+        max-width: 100%;
+        overflow: hidden;
+        align-items: center;
+      }
+      #SETTINGS > .content .caption .title span {
+        margin-left: 50px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+      #SETTINGS > .content .caption .close {
+        transition: background 0.1s ease;
+        position: relative;
+        width: var(--ICON_SIZE);
+        background: #f00;
+        color: var(--ICON_COLOR);
+      }
+      #SETTINGS > .content .caption .close:hover {
+        background: #d00;
+      }
+      #SETTINGS > .content .caption .close > i {
+        position: absolute;
+        font-size: var(--ICON_FONT_SIZE);
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%,-50%);
+      }
+      #SETTINGS > .content .content {
+        position: relative;
+        padding: 20px;
+        color: var(--ICON_COLOR);
+        width: calc(100% - 40px);
+        height: calc(100% - var(--ICON_SIZE));
+        font-family: 'Montserrat', sans-serif;
+        overflow-x: hidden;
+        overflow-y: scroll;
+      }
+      #SETTINGS > .content .content > .item {
+        position: relative;
+        padding: 10px;
+        margin: 10px;
+        width: calc(100% - 40px);
+        min-height: 40px;
+        border: 2px solid var(--ICON_COLOR);
+        border-radius: 20px;
+      }
+      #SETTINGS > .content .content > .item > .name {
+        position: absolute;
+        top: -18px;
+        left: 20px;
+        padding: 0 10px;
+        font-weight: bold;
+        font-size: 25px;
+        background: var(--ICON_BACKGROUND);
+      }
+      #SETTINGS > .content .content > .item .option {
+        position: relative;
+        width: 100%;
+        margin: 10px 0;
+      }
+      #SETTINGS > .content .content > .item .option .name {
+        position: relative;
+        font-weight: 100;
+        float: left;
+      }
+      #SETTINGS > .content .content > .item .option .choice {
+        position: relative;
+        float: right;
+      }
+
+
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css">
+  </head>
+  <body>
+
+    <canvas id="canvas"></canvas>
+
+    <div id="UI">
+      <div class="UI-LEFT">
+        <div class="icon">
+          <i class="fas fa-mouse-pointer"></i>
+        </div>
+        <div class="icon">
+          <i class="fas fa-hand-rock"></i>
+        </div>
+        <div class="icon">
+          <i class="fas fa-vector-square"></i>
+        </div>
+      </div>
+      <div class="icon none">
+      </div>
+      <div class="icon green">
+        <i class="fas fa-save"></i>
+      </div>
+      <div class="icon orange" id="openSettings">
+        <i class="fas fa-cogs"></i>
+      </div>
+      <div class="icon blue" id="opentool">
+        <i class="fas fa-tools"></i>
+      </div>
+    </div>
+
+
+    <!--
+
+      Tool:
+
+      - CONVEYOR
+      - FUSELAGE
+      - PAINTING
+      - WING
+      - COCKPIT
+      - ENGINE
+      - TAIL
+      - SEAT
+      - WINDOW
+      - ELECTRONIC
+      - PROPELLER
+      - LANDING GEAR
+      - RUDDER
+
+    -->
+
+    <div id="TOOLBOX">
+      <div class="caption">
+        <div class="title">
+          <span>Tool Box</span>
+        </div>
+        <div class="close" id="closetool">
+          <i class="fas fa-times"></i>
+        </div>
+      </div>
+      <div class="content" id="TOOLBOX-CONTENT">
+
+        <div class="section show" id="TOOLBOX-CATEGORY">
+
+          <div class="item tools-category" data-name="conveyor">
+            <div class="title">conveyor</div>
+            <div class="image" style="--local-image: url(tools/conveyor.png) center no-repeat;"></div>
+          </div>
+
+          <div class="item tools-category" data-name="fuselage">
+            <div class="title">fuselage</div>
+            <div class="image" style="--local-image: url(tools/fuselage.png) center no-repeat;"></div>
+          </div>
+
+          <div class="item tools-category" data-name="engine">
+            <div class="title">engine</div>
+            <div class="image" style="--local-image: url(tools/engine.png) center no-repeat;"></div>
+          </div>
+
+          <div class="item tools-category" data-name="wing">
+            <div class="title">wing</div>
+            <div class="image" style="--local-image: url(tools/wing.png) center no-repeat;"></div>
+          </div>
+
+          <div class="item tools-category" data-name="rudder">
+            <div class="title">rudder</div>
+            <div class="image" style="--local-image: url(tools/rudder.png) center no-repeat;"></div>
+          </div>
+
+          <div class="item tools-category" data-name="propeller">
+            <div class="title">propeller</div>
+            <div class="image" style="--local-image: url(tools/propeller.png) center no-repeat;"></div>
+          </div>
+
+          <div class="item tools-category" data-name="seat">
+            <div class="title">seat</div>
+            <div class="image" style="--local-image: url(tools/seat.png) center no-repeat;"></div>
+          </div>
+
+          <div class="item tools-category" data-name="windshield">
+            <div class="title">windshield</div>
+            <div class="image" style="--local-image: url(tools/windshield.png) center no-repeat;"></div>
+          </div>
+
+          <div class="item tools-category" data-name="landing gear">
+            <div class="title">landing gear</div>
+            <div class="image" style="--local-image: url(tools/landinggear.png) center no-repeat;"></div>
+          </div>
+
+        </div>
+
+        <div class="section" data-name="conveyor">
+
+          <div class="item large back">
+            <div class="title"><i class="fas fa-arrow-left"></i>&nbsp;&nbsp;Back</div>
+          </div>
+
+          <div class="item">
+            <div class="title">Small</div>
+          </div>
+
+        </div>
+
+        <div class="section" data-name="fuselage">
+
+          <div class="item large back">
+            <div class="title"><i class="fas fa-arrow-left"></i>&nbsp;&nbsp;Back</div>
+          </div>
+
+        </div>
+
+        <div class="section" data-name="engine">
+
+          <div class="item large back">
+            <div class="title"><i class="fas fa-arrow-left"></i>&nbsp;&nbsp;Back</div>
+          </div>
+
+        </div>
+
+        <div class="section" data-name="wing">
+
+          <div class="item large back">
+            <div class="title"><i class="fas fa-arrow-left"></i>&nbsp;&nbsp;Back</div>
+          </div>
+
+        </div>
+
+        <div class="section" data-name="rudder">
+
+          <div class="item large back">
+            <div class="title"><i class="fas fa-arrow-left"></i>&nbsp;&nbsp;Back</div>
+          </div>
+
+        </div>
+
+        <div class="section" data-name="propeller">
+
+          <div class="item large back">
+            <div class="title"><i class="fas fa-arrow-left"></i>&nbsp;&nbsp;Back</div>
+          </div>
+
+        </div>
+
+        <div class="section" data-name="seat">
+
+          <div class="item large back">
+            <div class="title"><i class="fas fa-arrow-left"></i>&nbsp;&nbsp;Back</div>
+          </div>
+
+        </div>
+
+        <div class="section" data-name="windshield">
+
+          <div class="item large back">
+            <div class="title"><i class="fas fa-arrow-left"></i>&nbsp;&nbsp;Back</div>
+          </div>
+
+        </div>
+
+        <div class="section" data-name="landing gear">
+
+          <div class="item large back">
+            <div class="title"><i class="fas fa-arrow-left"></i>&nbsp;&nbsp;Back</div>
+          </div>
+
+        </div>
+
+
+
+      </div>
+    </div>
+
+    <div id="SETTINGS" style="display:none;">
+      <div class="lock"></div>
+      <div id="SETTINGS-CONTENT" class="content">
+        <div class="caption">
+          <div class="title">
+            <span>Settings</span>
+          </div>
+          <div class="close" id="closeSettings">
+            <i class="fas fa-times"></i>
+          </div>
+        </div>
+        <div class="content">
+
+          <div class="item">
+            <span class="name">THEME</span>
+            <div class="option">
+              <div class="name">
+                Dark theme
+              </div>
+              <div class="choice">
+                <input type="checkbox" hidden="hidden" id="settings_use_dark_theme" checked>
+                <label class="switch" for="settings_use_dark_theme"></label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="babylon.js"></script>
+    <script src="babylon.gridMaterial.min.js"></script>
+    <script src="babylon.objFileLoader.min.js"></script>
+    <script src="app.js"></script>
+
+
+    <script type="text/javascript">
+
+      var engine = new PTAH.Engine(document.getElementById('canvas'));
+
+      //######################################### UI #####################################\\
+      function getCurrentTheme() {
+        return document.getElementById('theme-light') ? 'light' : 'dark';
+      }
+      function toggleTheme() {
+        if (!document.getElementById('theme-light')) {
+          var css = `:root {
+
+            --ICON_SIZE              : 64px;
+            --ICON_FONT_SIZE         : 30px;
+            --ICON_BACKGROUND        : #ddd;
+            --ICON_LIGHT_BACKGROUND  : #aaa;
+            --ICON_COLOR             : #111;
+            --ICON_DARK_COLOR        : #666;
+
+          }`;
+          var style = document.createElement('style');
+          style.id = 'theme-light';
+          style.type = 'text/css';
+          style.innerHTML = css;
+          document.getElementsByTagName('head')[0].appendChild(style);
+        } else {
+          document.getElementsByTagName('head')[0].removeChild(document.getElementById('theme-light'));
+        }
+      }
+      /*toggleTheme();
+      setTimeout(function () {
+        toggleTheme()
+      }, 5*1000);*/
+
+      function hasClass(element,classname) {
+        return element.className.replace(classname,'') !== element.className;
+      }
+
+      var TOOLBOX = document.getElementById('TOOLBOX');
+      var TOOLBOX_CATEGORY = document.getElementById('TOOLBOX-CATEGORY');
+      var SETTINGS = document.getElementById('SETTINGS');
+      var SETTINGS_CONTENT = document.getElementById('SETTINGS-CONTENT');
+
+      function openTool() {
+        if (hasClass(TOOLBOX,'open')) return;
+        TOOLBOX.classList.remove('close');
+        TOOLBOX.classList.add('open');
+      }
+      function closeTool() {
+        if (hasClass(TOOLBOX,'close')) return;
+        TOOLBOX.classList.remove('open');
+        TOOLBOX.classList.add('close');
+      }
+
+      var timeoutSettings = null;
+      function openSettings() {
+        if (hasClass(SETTINGS,'show')) return;
+        if (timeoutSettings != null) {
+          try {clearTimeout(timeoutSettings);timeoutSettings=null;}catch(e){}
+        }
+        SETTINGS.style.display = 'block';
+        setTimeout(function () {
+          SETTINGS.classList.add('show');
+          SETTINGS_CONTENT.classList.add('show');
+        }, 100);
+      }
+      function closeSettings() {
+        if (!hasClass(SETTINGS,'show')) return;
+        SETTINGS.classList.remove('show');
+        SETTINGS_CONTENT.classList.remove('show');
+        timeoutSettings = setTimeout(function () {
+          SETTINGS.style.display = 'none';
+          timeoutSettings = null;
+        }, 500);
+      }
+
+      document.getElementById('openSettings').onclick = function() {
+        openSettings();
+      }
+      document.getElementById('closeSettings').onclick = function() {
+        closeSettings();
+      }
+      document.getElementById('opentool').onclick = function() {
+        openTool();
+      }
+      document.getElementById('closetool').onclick = function() {
+        closeTool();
+      }
+
+
+
+      // SETTINGS
+      document.getElementById('settings_use_dark_theme').onchange = function() {
+        if (this.checked) {
+          if (getCurrentTheme() == 'light') toggleTheme();
+        } else {
+          if (getCurrentTheme() == 'dark') toggleTheme();
+        }
+      };
+
+
+      // TOOLBOX
+      var tools_category = TOOLBOX_CATEGORY.getElementsByClassName('tools-category');
+      var tools_back = TOOLBOX.getElementsByClassName('back');
+      console.warn(tools_back);
+      for (var i = 0; i < tools_back.length; i++) {
+        tools_back[i].onclick = function() {
+          console.warn(this.parentNode);
+          this.parentNode.classList.remove('show');
+          TOOLBOX_CATEGORY.classList.add('show');
+        }
+      }
+      for (var i = 0; i < tools_category.length; i++) {
+        tools_category[i].onclick = function() {
+          TOOLBOX_CATEGORY.classList.remove('show');
+          if (typeof this.dataset.name !== 'undefined') {
+            var s = TOOLBOX.getElementsByClassName('section');
+            var t = null;
+            for (var i = 0; i < s.length; i++) {
+              if (typeof s[i].dataset.name !== 'undefined') {
+                if (s[i].dataset.name == this.dataset.name) {
+                  t = s[i];
+                  break;
+                }
+              }
+            }
+            if (t != null) {
+              t.classList.add('show');
+            }
+          }
+        }
+      }
+
+      //######################################### UI #####################################\\
+
+
+
+
+
+
+      //####################################### TOOLBOX ##################################\\
+
+
+
+
+      //####################################### TOOLBOX ##################################\\
+
+
+      /*BABYLON.SceneLoader.Append(
+            './objects/piper_pa18/',
+            'piper_pa18.obj',
+            engine.scene,
+            () => {
+                console.log('Mesh Loaded');
+            }
+        );*/
+
+
+
+        var testheap = new PTAH.PriorityQueue();
+
+        testheap.push(new PTAH.Node(4,89));
+        testheap.push(new PTAH.Node(1,5));
+        testheap.push(new PTAH.Node("wesh",78));
+        testheap.push(new PTAH.Node(true,14));
+        testheap.push(new PTAH.Node(null,125));
+        testheap.push(new PTAH.Node("ok dacc",0));
+
+        var node = null;
+        while (node = testheap.pop()) {
+          console.log('NODE (',node.value,') :',node.priority);
+        }
+
+        console.warn('==========================================');
+
+
+
+        var v = PTAH.GenerateAllCombinaisons([0,1,-1],2);
+
+        console.warn(v);
+        console.warn('LENGTH: ',v.length);
+
+
+      engine.select(PTAH.Conveyor);
+
+      engine.runRenderLoop(function(engine){
+        // this === engine
+
+        var v = PTAH.Helper.scToWc(engine.scene,{x:engine.scene.pointerX,y:engine.scene.pointerY});
+
+        //console.warn(PTAH.Helper.wcToGc(v,engine.gridFactor));
+
+      });
+
+    </script>
+
+  </body>
+</html>
