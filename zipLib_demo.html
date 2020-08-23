@@ -442,7 +442,7 @@
             _buildPath(p,lastModifiedDate) {
               var n = p.split('/');
               var f = this;
-              for (var i = 0; i < n.length-2; i++) {
+              for (var i = 0; i < n.length-1; i++) {
                 if (typeof f._folders[n[i]] === 'undefined') {
                   f._folders[n[i]] = new zipLib.Zip(this._compressionMethod,'', f._root + n[i] + '/', f);
                   f._folders[n[i]].__lastModifiedDate = lastModifiedDate instanceof Date ? lastModifiedDate : new Date();
@@ -462,7 +462,7 @@
              */
             file(filename, buffer, lastModifiedDate, comment) {
                 filename = zipLib._safePath(filename);
-                var f = this._buildPath(filename,lastModifiedDate);
+                var f = this._buildPath(filename.slice(0,-1),lastModifiedDate);
                 var n = filename.split('/');
                 f._files[n[n.length-2]] = new zipLib._Entry(f._root + n[n.length-2], buffer, this._compressionMethod, lastModifiedDate, comment);
             }
