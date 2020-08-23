@@ -94,6 +94,23 @@ zipLib._crc32 = function(str) {
 };
 
 /**
+ * Safe MS-DOS path name
+ *
+ * @private
+ * @param {string} p - path name.
+ * @return {string} The Safe path name for format ZIP.
+ * @throws if path not valid, the function throws an error.
+ */
+zipLib._safePath = function(p) {
+    if (!/^(?:[a-z]:)?[\/\\]{0,2}(?:[.\/\\ ](?![.\/\\\n])|[^<>:"|?*.\/\\ \n])+(\/|\\)?$/i.test(p)) {
+        throw 'Not valid path name!';
+    }
+    p = p.replace(/\\/g, '/');
+    if (p[p.length - 1] !== '/') p += '/'; // normalize
+    return p;
+};
+
+/**
  * Creates a new Uint8Array based on two different ArrayBuffers
  *
  * @private
@@ -134,27 +151,27 @@ zipLib._Entry = class Entry {
         this._compressionMethod = compressionMethod;
 
         // compression method
-        switch (this._compressionMethod) {
-            case zipLib.CompressionMethod.DEFLATE:
-                var buff = pako.deflate(new Uint8Array(rawbuffer));
-                this._buffer = new ArrayBuffer(buff.byteLength - 6);
-                var v = new Uint8Array(buff);
-                var v2 = new Uint8Array(this._buffer);
-                for (var i = 2; i < v.length - 4; i++) {
-                    v2[i - 2] = v[i];
-                }
-                break;
-            default:
-                this._buffer = rawbuffer;
+        if (this._isfolder) {
+            this._buffer = new ArrayBuffer(0);
+            this._compressionMethod = 0x0;
+        } else {
+            switch (this._compressionMethod) {
+                case zipLib.CompressionMethod.DEFLATE:
+                    var buff = pako.deflate(new Uint8Array(rawbuffer));
+                    this._buffer = new ArrayBuffer(buff.byteLength - 6);
+                    var v = new Uint8Array(buff);
+                    var v2 = new Uint8Array(this._buffer);
+                    for (var i = 2; i < v.length - 4; i++) {
+                        v2[i - 2] = v[i];
+                    }
+                    break;
+                default:
+                    this._buffer = rawbuffer;
+            }
         }
 
-
-        // safe MS-DOS path name
-        if (!/^(?:[a-z]:)?[\/\\]{0,2}(?:[.\/\\ ](?![.\/\\\n])|[^<>:"|?*.\/\\ \n])+(\/|\\)?$/i.test(this._name)) {
-            throw 'Not valid filename!';
-        }
-        this._name = this._name.replace(/\\/g, '/');
-        if (this._isfolder && this._name[this._name.length - 1] !== '/') this._name += '/';
+        this._name = zipLib._safePath(this._name);
+        if (!this._isfolder) this._name = this._name.slice(0, -1);
 
     }
 
@@ -390,19 +407,34 @@ zipLib.Zip = class Zip {
 
         this._root = typeof root === 'string' ? root : '';
         this._parent = parent instanceof zipLib.Zip ? parent : null;
-        this._files = [];
-        this._folders = [];
+        this._files = {};
+        this._folders = {};
         this._comment = typeof comment === 'string' ? comment : 'zipLib By Flammrock';
 
         if (this._root != '') {
-            // safe MS-DOS path name
-            if (!/^(?:[a-z]:)?[\/\\]{0,2}(?:[.\/\\ ](?![.\/\\\n])|[^<>:"|?*.\/\\ \n])+(\/|\\)?$/i.test(this._root)) {
-                throw 'Not valid filename!';
-            }
-            this._root = this._root.replace(/\\/g, '/');
-            if (this._root[this._root.length - 1] !== '/') this._root += '/';
+            this._root = zipLib._safePath(this._root);
         }
 
+    }
+
+    /**
+     * Build path
+     *
+     * @param {string} p - path name.
+     * @param {Date} [lastModifiedDate] - last Modified Date of the path.
+     * @return {zipLib.Zip} The last "container" of path.
+     */
+    _buildPath(p, lastModifiedDate) {
+        var n = p.split('/');
+        var f = this;
+        for (var i = 0; i < n.length - 2; i++) {
+            if (typeof f._folders[n[i]] === 'undefined') {
+                f._folders[n[i]] = new zipLib.Zip(this._compressionMethod, '', f._root + n[i] + '/', f);
+                f._folders[n[i]].__lastModifiedDate = lastModifiedDate instanceof Date ? lastModifiedDate : new Date();
+            }
+            f = f._folders[n[i]];
+        }
+        return f;
     }
 
     /**
@@ -414,7 +446,10 @@ zipLib.Zip = class Zip {
      * @param {string} [comment] - Comment of the File.
      */
     file(filename, buffer, lastModifiedDate, comment) {
-        this._files.push(new zipLib._Entry(this._root + filename, buffer, this._compressionMethod, lastModifiedDate, comment));
+        filename = zipLib._safePath(filename);
+        var f = this._buildPath(filename, lastModifiedDate);
+        var n = filename.split('/');
+        f._files[n[n.length - 2]] = new zipLib._Entry(f._root + n[n.length - 2], buffer, this._compressionMethod, lastModifiedDate, comment);
     }
 
     /**
@@ -426,9 +461,7 @@ zipLib.Zip = class Zip {
      * @return {zipLib.Zip} The Folder ZIP Container, simply use .file() on this returned object to add a file to this folder.
      */
     folder(foldername, lastModifiedDate, comment) {
-        this._folders.push(new zipLib.Zip(this._compressionMethod, comment, this._root + foldername, this));
-        this._folders[this._folders.length - 1].__lastModifiedDate = lastModifiedDate instanceof Date ? lastModifiedDate : new Date();
-        return this._folders[this._folders.length - 1];
+        return this._buildPath(zipLib._safePath(foldername), lastModifiedDate);
     }
 
     /**
@@ -438,12 +471,18 @@ zipLib.Zip = class Zip {
      */
     get entries() {
         var entries = [];
-        entries = entries.concat(this._files);
-        for (var i = 0; i < this._folders.length; i++) {
-            entries = entries.concat(this._folders[i].entries);
+        if (this._parent != null) {
+            entries.push(new zipLib._Entry(this._root, new ArrayBuffer(0), this._compressionMethod, this.__lastModifiedDate, this._comment, true));
         }
-        if (this._parent != null && entries.length == 0) {
-            return [new zipLib._Entry(this._root, new ArrayBuffer(0), this._compressionMethod, this.__lastModifiedDate, this._comment, true)];
+        for (var i in this._files) {
+            if (this._files.hasOwnProperty(i)) {
+                entries.push(this._files[i]);
+            }
+        }
+        for (var i in this._folders) {
+            if (this._folders.hasOwnProperty(i)) {
+                entries = entries.concat(this._folders[i].entries);
+            }
         }
         return entries;
     }
@@ -462,7 +501,7 @@ zipLib.Zip = class Zip {
             var b = entries[i].getLocalFileHeader().buffer; // build and retrieve the buffer of the "local file header"
             buffer = zipLib._appendBuffer(buffer, b); // add the "local file header" of this file to the whole buffer
             buffer = zipLib._appendBuffer(buffer, entries[i].buffer); // add the buffer of this file to the whole buffer
-            index.push(b.byteLength + entries[i].buffer.byteLength); // we store each offset of "local file header" (this is used by .getCentralDirectoryFileHeader() method)
+            index.push(buffer.byteLength); // we store each offset of "local file header" (this is used by .getCentralDirectoryFileHeader() method)
         }
 
         var size = 0; // used to calcule the size (in byte) of the "central directory"
