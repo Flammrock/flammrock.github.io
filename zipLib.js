@@ -102,9 +102,18 @@ zipLib._crc32 = function(str) {
  * @throws if path not valid, the function throws an error.
  */
 zipLib._safePath = function(p) {
-    if (!/^(?:[a-z]:)?[\/\\]{0,2}(?:[.\/\\ ](?![.\/\\\n])|[^<>:"|?*.\/\\ \n])+(\/|\\)?$/i.test(p)) {
+
+    // Safe MS-DOS path name test
+    if (!/^(?:(?:[a-z]:)[\/\\]{1,2}|[\/\\]?)(?:[.\/\\ ](?![.\/\\\n])|[^<>:"|?*.\/\\ \n\r\t\f\v])+(\/|\\)?$/i.test(p)) {
         throw 'Not valid path name!';
     }
+
+    // If path name start with drive letter or directly with a backslash/slash, ZIP format only accept relative path name
+    // so we just remove that of the path name
+    if (/^(?:(?:[a-z]:[\/\\]{0,2})|[\/\\])/i.test(p)) {
+        p = p.match(/^(?:(?:[a-z]:[\/\\]{0,2})|[\/]+)(.*)$/i)[1];
+    }
+
     p = p.replace(/\\/g, '/');
     if (p[p.length - 1] !== '/') p += '/'; // normalize
     return p;
