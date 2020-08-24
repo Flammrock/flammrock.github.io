@@ -117,9 +117,18 @@
          * @throws if path not valid, the function throws an error.
          */
         zipLib._safePath = function(p) {
-          if (!/^(?:[a-z]:)?[\/\\]{0,2}(?:[.\/\\ ](?![.\/\\\n])|[^<>:"|?*.\/\\ \n])+(\/|\\)?$/i.test(p)) {
+
+          // Safe MS-DOS path name test
+          if (!/^(?:(?:[a-z]:)[\/\\]{1,2}|[\/\\]?)(?:[.\/\\ ](?![.\/\\\n])|[^<>:"|?*.\/\\ \n\r\t\f\v])+(\/|\\)?$/i.test(p)) {
             throw 'Not valid path name!';
           }
+
+          // If path name start with drive letter or directly with a backslash/slash, ZIP format only accept relative path name
+          // so we just remove that of the path name
+          if (/^(?:(?:[a-z]:[\/\\]{0,2})|[\/\\])/i.test(p)) {
+            p = p.match(/^(?:(?:[a-z]:[\/\\]{0,2})|[\/]+)(.*)$/i)[1];
+          }
+
           p = p.replace(/\\/g,'/');
           if (p[p.length-1] !== '/') p += '/'; // normalize
           return p;
@@ -803,10 +812,10 @@
 
         var id = typeof hex === 'undefined' ? typeof text === 'undefined' ? 'splash' : 'splashtext' : 'splashhex';
 
-        if (typeof text === 'undefined' && typeof hex === 'undefined') {
-          document.getElementById(id+'').style.height = '150px';
-        } else {
+        if (typeof text !== 'undefined' || typeof hex !== 'undefined') {
           document.getElementById(id+'').style.height = '80%';
+        } else {
+          document.getElementById(id+'').style.height = '150px';
         }
         document.getElementById(id+'-alert').style.display = 'none';
 
@@ -830,10 +839,10 @@
         document.getElementById(id+'-success').innerHTML = success;
         var call = function(e,f) {
           return f(e,[document.getElementById(id+'-input'),document.getElementById(id+'-input2')],function(text){
-            if (typeof text === 'undefined') {
-              document.getElementById(id+'').style.height = '250px';
-            } else {
+            if (typeof settings.text !== 'undefined' || typeof settings.hex !== 'undefined') {
               document.getElementById(id+'').style.height = 'calc(80% + 50px)';
+            } else {
+              document.getElementById(id+'').style.height = '250px';
             }
             document.getElementById(id+'-alert').innerHTML = text;
             document.getElementById(id+'-alert').style.display = 'block';
@@ -1070,13 +1079,12 @@
           error:'Cancel',
           onsuccess:function(event,input,senderror,release){
 
-            // check if path is valid
-            if (!/^(?:[a-z]:)?[\/\\]{0,2}(?:[.\/\\ ](?![.\/\\\n])|[^<>:"|?*.\/\\ \n])+(\/|\\)?$/i.test(input[0].value)) {
+            try {
+              v = zipLib._safePath(input[0].value);
+            } catch (e) {
               senderror('Not valid folder name!');
               return;
             }
-            var v = input[0].value.replace(/\\/g,'/');
-            if (v[v.length-1] !== '/') v += '/';
 
             // check if folder already exist
             if (isExist(v)) {
@@ -1116,13 +1124,13 @@
           error:'Cancel',
           onsuccess:function(event,input,senderror,release){
 
-            // check if path is valid
-            if (!/^(?:[a-z]:)?[\/\\]{0,2}(?:[.\/\\ ](?![.\/\\\n])|[^<>:"|?*.\/\\ \n])+(\/|\\)?$/i.test(input[0].value)) {
+            var v = zipLib._safePath(input[0].value);
+            try {
+              v = zipLib._safePath(input[0].value);
+            } catch (e) {
               senderror('Not valid file name!');
               return;
             }
-            var v = input[0].value.replace(/\\/g,'/');
-            if (v[v.length-1] !== '/') v += '/';
 
             // check if folder already exist
             if (isExist(v)) {
