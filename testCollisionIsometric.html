@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Event System + Collider</title>
+    <style media="screen">
+      html, body {
+        margin: 0;
+        overflow: hidden;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- class polygon -->
+    <script type="text/javascript">
+      function FindEllipseSegmentIntersections(r,pt0,pt1,pt2) {
+        //Translate To center of Ellipse
+        pt1.x-=pt0.x;
+        pt1.y-=pt0.y;
+        pt2.x-=pt0.x;
+        pt2.y-=pt0.y;
+
+        //Find equation of Line/Segment
+        var slope = (pt1.y-pt2.y)/(pt1.x-pt2.x);
+        var y = {
+          a:slope,
+          b:slope*-pt1.x+pt1.y,
+          _fn: function(x) {
+            return slope*x+(slope*-pt1.x+pt1.y);
+          }
+        };
+
+        //Solve Quadratic Equation
+        var d = r.x*r.y;
+        var A = d/r.x+(y.a*y.a*d/r.y);
+        var B = (y.a*y.b)*2*d/r.y;
+        var C = y.b*y.b*d/r.y-d;
+        var delta = B*B - 4 * A * C;
+
+        //Calc Solution
+        var S = [];
+        if (delta < 0) {
+          //No Intersection
+          return [];
+        } else if (delta == 0) {
+          //One Point Intersection
+          S.push(-B/2*A);
+        } else {
+          //Two Point Intersection
+          S.push((-B-Math.sqrt(delta))/(2*A));
+          S.push((-B+Math.sqrt(delta))/(2*A));
+        }
+
+
+        //Get all Points Intersections
+        var Points = [];
+        for (var i = 0; i < S.length; i++) {
+          var angle = Math.atan2(y._fn(S[i])/10,S[i]/10);
+          Points.push({
+            x:pt0.x+r.x*Math.cos(angle),
+            y:pt0.y+r.y*Math.sin(angle)
+          });
+        }
+
+        return Points;
+      };
+
+      function Point(px, py) {
+        if (typeof px === 'string') {
+          var t = px.split(',').map(x=>parseInt(x));
+          this.x = t[0];
+          this.y = t[1];
+        } else {
+          this.x = px || 0;
+          this.y = py || 0;
+        }
+      };
+      Point.prototype.toString = function() {
+        return this.x+','+this.y;
+      };
+      Point.parse = function(s) {
+        return new Point(s);
+      };
+      function Polygon(settings) {
+        settings = settings || {};
+        this.points = settings.points || new Array();
+        this.center = settings.center || new Point(0,0);
+        this.color = settings.color || 'rgba(255,0,0,0.4)';
+        this.data = settings.data || {};
+        this.collision = false;
+        this.event = false;
+      };
+      Polygon.prototype.addPoint = function(p) {
+        this.points.push(p);
+      };
+      Polygon.prototype.addAbsolutePoint = function(p) {
+        this.points.push( { "x": p.x - this.center.x, "y": p.y - this.center.y } );
+      };
+      Polygon.prototype.getNumberOfSides = function() {
+        return this.points.length;
+      };
+      Polygon.prototype.rotate = function(rads) {
+        for (var i = 0; i < this.points.length; i++) {
+          var x = this.points[i].x;
+          var y = this.points[i].y;
+          this.points[i].x = Math.cos(rads) * x - Math.sin(rads) * y;
+          this.points[i].y = Math.sin(rads) * x + Math.cos(rads) * y;
+        }
+      };
+      Polygon.prototype.draw = function(canvas,ctx,isMouseIn) {
+        ctx.beginPath();
+        ctx.fillStyle = isMouseIn?'rgba(255,0,0,0.7)':'rgba(255,0,0,0.4)';
+        ctx.strokeStyle = '#f00';
+        ctx.beginPath();
+        ctx.moveTo(this.points[0].x, this.points[0].y);
+        for (var i = 1; i < this.points.length; i++) {
+          ctx.lineTo(this.points[i].x + this.center.x, this.points[i].y + this.center.y);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      };
+      Polygon.prototype.containsPoint = function(pnt) {
+        var nvert = this.points.length;
+        var testx = pnt.x;
+        var testy = pnt.y;
+
+        var vertx = new Array();
+        for (var q = 0; q < this.points.length; q++) {
+          vertx.push(this.points[q].x + this.center.x);
+        }
+
+        var verty = new Array();
+        for (var w = 0; w < this.points.length; w++) {
+          verty.push(this.points[w].y + this.center.y);
+        }
+
+        var i, j = 0;
+        var c = false;
+        for (i = 0, j = nvert - 1; i < nvert; j = i++) {
+          if ( ((verty[i]>testy) != (verty[j]>testy)) &&
+              (testx < (vertx[j]-vertx[i]) * (testy-verty[i]) / (verty[j]-verty[i]) + vertx[i]) )
+            c = !c;
+        }
+        return c;
+      };
+      Polygon.prototype.intersectsWith = function(other) {
+        var axis = new Point();
+        var tmp, minA, maxA, minB, maxB;
+        var side, i;
+        var smallest = null;
+        var overlap = 99999999;
+
+        /* test polygon A's sides */
+        for (side = 0; side < this.getNumberOfSides(); side++) {
+          /* get the axis that we will project onto */
+          if (side == 0) {
+            axis.x = this.points[this.getNumberOfSides() - 1].y - this.points[0].y;
+            axis.y = this.points[0].x - this.points[this.getNumberOfSides() - 1].x;
+          } else {
+            axis.x = this.points[side - 1].y - this.points[side].y;
+            axis.y = this.points[side].x - this.points[side - 1].x;
+          }
+
+          /* normalize the axis */
+          tmp = Math.sqrt(axis.x * axis.x + axis.y * axis.y);
+          axis.x /= tmp;
+          axis.y /= tmp;
+
+          /* project polygon A onto axis to determine the min/max */
+          minA = maxA = this.points[0].x * axis.x + this.points[0].y * axis.y;
+          for (i = 1; i < this.getNumberOfSides(); i++) {
+            tmp = this.points[i].x * axis.x + this.points[i].y * axis.y;
+            if (tmp > maxA)
+              maxA = tmp;
+            else if (tmp < minA)
+              minA = tmp;
+          }
+          /* correct for offset */
+          tmp = this.center.x * axis.x + this.center.y * axis.y;
+          minA += tmp;
+          maxA += tmp;
+
+          /* project polygon B onto axis to determine the min/max */
+          minB = maxB = other.points[0].x * axis.x + other.points[0].y * axis.y;
+          for (i = 1; i < other.getNumberOfSides(); i++) {
+            tmp = other.points[i].x * axis.x + other.points[i].y * axis.y;
+            if (tmp > maxB)
+              maxB = tmp;
+            else if (tmp < minB)
+              minB = tmp;
+          }
+          /* correct for offset */
+          tmp = other.center.x * axis.x + other.center.y * axis.y;
+          minB += tmp;
+          maxB += tmp;
+
+          /* test if lines intersect, if not, return false */
+          if (maxA < minB || minA > maxB) {
+            return false;
+          } else {
+            var o = (maxA > maxB ? maxB - minA : maxA - minB);
+            if (o < overlap) {
+              overlap = o;
+                smallest = {x: axis.x, y: axis.y};
+            }
+          }
+        }
+
+        /* test polygon B's sides */
+        for (side = 0; side < other.getNumberOfSides(); side++) {
+          /* get the axis that we will project onto */
+          if (side == 0) {
+            axis.x = other.points[other.getNumberOfSides() - 1].y - other.points[0].y;
+            axis.y = other.points[0].x - other.points[other.getNumberOfSides() - 1].x;
+          } else {
+            axis.x = other.points[side - 1].y - other.points[side].y;
+            axis.y = other.points[side].x - other.points[side - 1].x;
+          }
+
+          /* normalize the axis */
+          tmp = Math.sqrt(axis.x * axis.x + axis.y * axis.y);
+          axis.x /= tmp;
+          axis.y /= tmp;
+
+          /* project polygon A onto axis to determine the min/max */
+          minA = maxA = this.points[0].x * axis.x + this.points[0].y * axis.y;
+          for (i = 1; i < this.getNumberOfSides(); i++) {
+            tmp = this.points[i].x * axis.x + this.points[i].y * axis.y;
+            if (tmp > maxA)
+              maxA = tmp;
+            else if (tmp < minA)
+              minA = tmp;
+          }
+          /* correct for offset */
+          tmp = this.center.x * axis.x + this.center.y * axis.y;
+          minA += tmp;
+          maxA += tmp;
+
+          /* project polygon B onto axis to determine the min/max */
+          minB = maxB = other.points[0].x * axis.x + other.points[0].y * axis.y;
+          for (i = 1; i < other.getNumberOfSides(); i++) {
+            tmp = other.points[i].x * axis.x + other.points[i].y * axis.y;
+            if (tmp > maxB)
+              maxB = tmp;
+            else if (tmp < minB)
+              minB = tmp;
+          }
+          /* correct for offset */
+          tmp = other.center.x * axis.x + other.center.y * axis.y;
+          minB += tmp;
+          maxB += tmp;
+
+          /* test if lines intersect, if not, return false */
+          if (maxA < minB || minA > maxB) {
+            return false;
+          } else {
+            var o = (maxA > maxB ? maxB - minA : maxA - minB);
+            if (o < overlap) {
+              overlap = o;
+                smallest = {x: axis.x, y: axis.y};
+            }
+          }
+        }
+
+        return {"overlap": overlap + 0.001, "axis": smallest};
+      };
+    </script>
+
+    <canvas id="canvas"></canvas>
+
+    <script type="text/javascript">
+
+      // constante :
+      const ISO_WIDTH = 100;
+      const ISO_HEIGHT = 50;
+
+      // inutile (mais c'est juste pour qu'il y est une peu de design)
+      function darker_rgb(rgb) {
+        return {
+          r: rgb.r-50<0?0:rgb.r-50,
+          g: rgb.g-50<0?0:rgb.g-50,
+          b: rgb.b-50<0?0:rgb.b-50,
+        };
+      }
+      function lighter_rgb(rgb) {
+        return {
+          r: rgb.r+50>255?255:rgb.r+50,
+          g: rgb.g+50>255?255:rgb.g+50,
+          b: rgb.b+50>255?255:rgb.b+50,
+        };
+      }
+
+      // on récupère le canvas et le context le plus simplement
+      var canvas = document.getElementById('canvas');
+      var ctx = canvas.getContext('2d');
+
+      // absolument tout les items à dessiner seront ici (tous)
+      var items = [];
+
+
+      //================ CLASS ==================
+
+      // petite class permettant de créer un Item
+      class Item {
+
+        constructor(settings) {
+          settings = settings || {};
+          this._position = settings.position || new Point();
+          this._rposition = new Point(Map.getX(this._position.x,this._position.y),Map.getY(this._position.x,this._position.y));
+          this._collider = new Collider(this);
+          this.isCollide = new Point(0,0);
+        }
+
+        get collider() {
+          return this._collider;
+        }
+
+        get grid_position() {
+          return this._position;
+        }
+
+        get position() {
+          return this._rposition;
+        }
+
+        set position(p) {
+          this._position.x = p.x;
+          this._position.y = p.y;
+          this._rposition.x = Map.getX(p.x,p.y);
+          this._rposition.y = Map.getY(p.x,p.y);
+        }
+
+        hasCollider() {
+          return this._collider.polygon != null;
+        }
+
+        setPolygonCollider(polygon) {
+          this._collider._polygon = polygon;
+        }
+
+        checkCollide(index,otheritems,direction) {
+          if (!this.hasCollider()) return;
+          for (var i = 0; i < otheritems.length; i++) {
+            if (index==i) continue;
+            if (this._collider.isCollide(otheritems[i].collider)) {
+              this.isCollide[direction] = true;
+              this.onCollide(otheritems[i]);
+            }
+          }
+        }
+
+        draw(canvas,ctx) {}
+
+        onCollide(otherItem) {}
+
+        move(){}
+
+        undomove(){}
+
+      }
+
+      // pour créer des ptits cubes
+      class IsoCube extends Item {
+
+        constructor(settings) {
+          settings = settings || {};
+          super(settings);
+          this.width = settings.width || ISO_WIDTH;
+          this.height = settings.height || ISO_HEIGHT;
+          this.depth = settings.depth || 15;
+          this.color = settings.color || {r:20,g:180,b:20};
+        }
+
+        draw(canvas,ctx) {
+          var rx = this._rposition.x;
+          var ry = this._rposition.y;
+
+          var width = this.width;
+          var height = this.height;
+          var depth = this.depth;
+
+          var color = this.color;
+
+          // on dessine le losange
+          ctx.beginPath();
+          ctx.moveTo(rx,ry-height/2);
+          ctx.lineTo(rx+width/2,ry);
+          ctx.lineTo(rx,ry+height/2);
+          ctx.lineTo(rx-width/2,ry);
+          ctx.closePath();
+
+          // on colorie
+          ctx.fillStyle = 'rgb('+color.r+','+color.g+','+color.b+')';
+          ctx.fill();
+
+          // on dessine le parallélogramme à gauche
+          ctx.beginPath();
+          ctx.moveTo(rx-width/2,ry);
+          ctx.lineTo(rx,ry+height/2);
+          ctx.lineTo(rx,ry+height/2+depth);
+          ctx.lineTo(rx-width/2,ry+depth);
+          ctx.closePath();
+
+          // on colorie
+          var color_light = lighter_rgb(color);
+          ctx.fillStyle = 'rgb('+color_light.r+','+color_light.g+','+color_light.b+')';
+          ctx.fill();
+
+          // on dessine le parallélogramme à droite
+          ctx.beginPath();
+          ctx.moveTo(rx+width/2,ry);
+          ctx.lineTo(rx,ry+height/2);
+          ctx.lineTo(rx,ry+height/2+depth);
+          ctx.lineTo(rx+width/2,ry+depth);
+          ctx.closePath();
+
+          // on colorie
+          var color_dark = darker_rgb(color);
+          ctx.fillStyle = 'rgb('+color_dark.r+','+color_dark.g+','+color_dark.b+')';
+          ctx.fill();
+        }
+
+      }
+
+
+      // la classe collider
+      class Collider {
+
+        constructor(parent,polygon) {
+          this._parent = parent;
+          this._polygon = polygon || null;
+        }
+
+        get polygon() {
+          return this._polygon;
+        }
+
+        isCollide(otherCollider) {
+          return this._polygon.intersectsWith(otherCollider.polygon);
+        }
+
+      }
+
+      // la classe Map
+      class Map {
+
+        constructor() {
+          this.data = [];
+        }
+
+        static getX(x,y) {
+          return (x+y)*ISO_WIDTH/2;
+        }
+
+        static getY(x,y) {
+          return (y-x)*ISO_HEIGHT/2;
+        }
+
+        add(p,item) {
+          item.position = p;
+          this.data.push(item);
+        }
+
+        draw(canvas,ctx) {
+          var sorteddata = this.data.sort(function(a,b){
+            return a.position.y-b.position.y;
+          });
+          for (var i = 0; i < sorteddata.length; i++) {
+            sorteddata[i].draw(canvas,ctx);
+          }
+        }
+
+      }
+
+
+      // petite class player
+      class Player extends Item {
+
+        constructor(settings) {
+          settings = settings || {};
+          super(settings);
+          this.width = settings.width || 50;
+          this.height = settings.height || 50;
+          this.speed = 5;
+          this.boxcollision = new Polygon({
+            points: [
+              new Point(this.position.x-this.width/2,this.position.y-this.height/2),
+              new Point(this.position.x+this.width/2,this.position.y-this.height/2),
+              new Point(this.position.x+this.width/2,this.position.y+this.height/2),
+              new Point(this.position.x-this.width/2,this.position.y+this.height/2),
+            ]
+          });
+          this.setPolygonCollider(this.boxcollision);
+        }
+
+        move(direction) {
+
+          // on fait bouger le joueur avec les flèches
+          if ((!direction || direction=='x') && !this.isCollide.x && keysinput[KEY_ARROW_LEFT]) {
+            this._position.x-=this.speed;
+          }
+          if ((!direction || direction=='x') && !this.isCollide.x && keysinput[KEY_ARROW_RIGHT]) {
+            this._position.x+=this.speed;
+          }
+          if ((!direction || direction=='y') && !this.isCollide.y && keysinput[KEY_ARROW_UP]) {
+            this._position.y-=this.speed;
+          }
+          if ((!direction || direction=='y') && !this.isCollide.y && keysinput[KEY_ARROW_DOWN]) {
+            this._position.y+=this.speed;
+          }
+          this._rposition.x = this._position.x;
+          this._rposition.y = this._position.y;
+
+          // on met à jour la box
+          this.boxcollision.points[0] = new Point(this.position.x-this.width/2,this.position.y-this.height/2);
+          this.boxcollision.points[1] = new Point(this.position.x+this.width/2,this.position.y-this.height/2);
+          this.boxcollision.points[2] = new Point(this.position.x+this.width/2,this.position.y+this.height/2);
+          this.boxcollision.points[3] = new Point(this.position.x-this.width/2,this.position.y+this.height/2);
+        }
+
+        undomove(direction) {
+          this.speed=-this.speed;
+          this.move(direction);
+          this.speed=-this.speed;
+        }
+
+        draw(canvas,ctx) {
+
+          this.move();
+
+          this.boxcollision.draw(canvas,ctx);
+
+          ctx.beginPath();
+          ctx.rect(this.position.x-this.width/2,this.position.y-this.height/2,this.width,this.height);
+          ctx.fillStyle = '#08f';
+          ctx.fill();
+        }
+
+        onCollide(other) {
+          //console.log(other);
+          // pour faire le portail, il reste plus qu'à faire une clase Gate extends Item, et de faire que ce code marche :
+          /*
+
+          // s'il s'agit d'un portail :
+          if (other instanceof Gate) {
+            gate.teleport(this); // et la méthode "teleport" modifie la position de de cette objet
+            // pour le changement de dimensions, il faut que dans la méthode teleport, on appele une fonction du genre :
+            // game.changeDimension(PurpleDimension) // où PurpleDimension est un objet de la classe map par exemple
+          }
+
+
+          */
+        }
+
+      }
+
+      //============== End: CLASS ===============
+
+
+
+      // On construit un polygon juste pour le teste :)
+      var n = new Polygon();
+      n.addPoint(new Point(-1*20+100,-1*20));
+      n.addPoint(new Point(4*20+100,-5*20));
+      n.addPoint(new Point(8*20+100,3*20));
+      n.addPoint(new Point(3*20+100,5*20));
+      n.addPoint(new Point(-4*20+100,2*20));
+      var c = new Item();
+      c.setPolygonCollider(n);
+
+      items.push(c); // on l'ajoute (on va le dessiner)
+      items.push(n); // on l'ajoute (on va le dessiner)
+
+      // on créer une nouvelle map
+      var map = new Map();
+
+      // on créé une map de 5 par 5
+      for (var x = -5; x < 5; x++) {
+        for (var y = -5; y < 5; y++) {
+          map.add(new Point(x,y),new IsoCube());
+        }
+      }
+
+
+      items.push(map); // on ajoute la map dans les items à dessiner
+
+
+      var player = new Player();
+      items.push(player);
+
+
+      // simple event pour faire bouger le player
+      var KEY_ARROW_LEFT = 37;
+      var KEY_ARROW_RIGHT = 39;
+      var KEY_ARROW_UP = 38;
+      var KEY_ARROW_DOWN = 40;
+      var keysinput = {};
+      window.addEventListener('keydown',function(e){
+        keysinput[e.keyCode] = true;
+      });
+      window.addEventListener('keyup',function(e){
+        keysinput[e.keyCode] = null;
+        delete keysinput[e.keyCode];
+      });
+
+
+
+
+      function update() {
+
+        // au cas où qu'on redimensionne la fenêtre
+        window.requestAnimationFrame(update);
+
+        // on update
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // on centre tout ça
+        ctx.translate(canvas.width/2,canvas.height/2);
+
+        // on veut dessiner les polygones en priorité
+        var sorteditems = items.sort(function(a,b){
+          if (a instanceof Polygon) return 1;
+          if (b instanceof Polygon) return -1;
+          return 0;
+        });
+
+        // on récupère la liste des items qui ont un collider
+        var itemscollider = [];
+        for (var i = 0; i < sorteditems.length; i++) {
+          if (!(sorteditems[i] instanceof Item)) continue;
+          if (sorteditems[i].hasCollider()) {
+            itemscollider.push(sorteditems[i]);
+          }
+        }
+
+        // on teste les collisions
+        for (var i = 0; i < itemscollider.length; i++) {
+
+          itemscollider[i].isCollide.x = false;
+          itemscollider[i].isCollide.y = false;
+
+          itemscollider[i].move('x');
+          itemscollider[i].checkCollide(i,itemscollider,'x');
+          var tmpx = itemscollider[i].isCollide.x;
+          itemscollider[i].isCollide.x = false;
+          itemscollider[i].undomove('x');
+          itemscollider[i].isCollide.x = tmpx;
+
+          itemscollider[i].move('y');
+          itemscollider[i].checkCollide(i,itemscollider,'y');
+          var tmpy = itemscollider[i].isCollide.y;
+          itemscollider[i].isCollide.y = false;
+          itemscollider[i].undomove('y');
+          itemscollider[i].isCollide.y = tmpy;
+
+        }
+
+        // on dessine
+        for (var i = 0; i < sorteditems.length; i++) {
+          sorteditems[i].draw(canvas,ctx);
+        }
+
+        // on annule la transformation
+        ctx.setTransform(1,0,0,1,0,0);
+
+      }
+
+      // on appelle la fonction qui va dessiner sur notre canvas
+      update();
+    </script>
+
+  </body>
+</html>
