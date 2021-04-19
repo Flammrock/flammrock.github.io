@@ -90,21 +90,22 @@ if (l1.p1.x - l2.p2.x == 0 && l1.p1.y - l2.p2.y == 0) return null;
    return null;
 }
 
-      var minx = 200;
-      var miny = 200;
-      var maxx = 500;
-      var maxy = 500;
+      var minx = 500;
+      var miny = 500;
+      var maxx = 1000;
+      var maxy = 1000;
 
-      var proba_change_direction = 0.2;
+      var proba_change_direction = 0.8;
+      var proba_add_bifurcation = 0.8;
 
 
 
 
-      var create_squeleton = function(x,y,lines,squeleton) {
-        var local_dir = Math.floor(Math.random()*4);
-        var last_dir = -1;
+      var create_squeleton = function(x,y,lines,squeleton,lastdir,dir) {
+        var local_dir = typeof dir !== 'undefined' ? dir : Math.floor(Math.random()*4);
+        var last_dir = typeof lastdir !== 'undefined' ? lastdir : -1;
         squeleton.push({x:x,y:y});
-        for (var i = 0; i < 1000; i++) {
+        for (var i = 0; i < 100; i++) {
 
           x += local_dir==0?-Math.floor(Math.random()*(maxx-minx+1)+minx):local_dir==2?Math.floor(Math.random()*(maxx-minx+1)+minx):0;
           y += local_dir==1?-Math.floor(Math.random()*(maxy-miny+1)+miny):local_dir==3?Math.floor(Math.random()*(maxy-miny+1)+miny):0;
@@ -125,7 +126,7 @@ if (l1.p1.x - l2.p2.x == 0 && l1.p1.y - l2.p2.y == 0) return null;
                 // check for min dist
                 var ray_cast = doLinesIntersect(l1,l2);
                 if (ray_cast!=null) {
-                  if ((ray_cast.x-x)*(ray_cast.x-x)+(ray_cast.y-y)*(ray_cast.y-y) < minx*minx) return;
+                  if ((ray_cast.x-x)*(ray_cast.x-x)+(ray_cast.y-y)*(ray_cast.y-y) < maxx*maxx) return;
                 }
 
               }
@@ -149,23 +150,68 @@ if (l1.p1.x - l2.p2.x == 0 && l1.p1.y - l2.p2.y == 0) return null;
             }
           }
 
+
           if (last_dir == local_dir) {
             squeleton[squeleton.length-1].x = x;
             squeleton[squeleton.length-1].y = y;
+
+            if (squeleton.length > 1) {
+              lines[lines.length-1] = {p1:squeleton[squeleton.length-2],p2:squeleton[squeleton.length-1]};
+
+            }
+
           } else {
             squeleton.push({
               x:x,
               y:y
             });
-          }
 
-          if (squeleton.length > 1) {
-            lines.push({p1:squeleton[squeleton.length-2],p2:squeleton[squeleton.length-1]});
+            if (squeleton.length > 1) {
+
+              lines.push({p1:squeleton[squeleton.length-2],p2:squeleton[squeleton.length-1]});
+
+            }
+
+
           }
 
           if (intersect != null) return;
 
           last_dir = local_dir;
+
+          if (squeleton.length > 1 && Math.random() < proba_add_bifurcation) {
+            squeleton.push([]);
+            squeleton.push([]);
+            //console.log('biffurcation');
+            var c = [(local_dir+1)%4,(local_dir+3)%4];
+            //console.log('c:',c);
+            var c1 = null;
+            var c2 = null;
+            var i1 = Math.random() < proba_change_direction ? Math.floor(Math.random()*2) : null;
+            //console.log('i1:',i1);
+            if (i1 != null) {
+              c1 = c[i1];
+              c.splice(i1,1);
+            } else c1 = local_dir;
+            //console.log('c1:',c1);
+            //console.log('c:',c);
+            var i2 = Math.floor(Math.random()*(c.length));
+            var c2 = c[i2];
+            c.splice(i2,1);
+            //console.log('c2:',c2);
+            //console.log('local_dir:',local_dir);
+            //console.log('============================');
+            //console.log(c);
+            var c3 = c.length==0?local_dir:c.pop();
+            //console.log(c1,c2,c3);
+            create_squeleton(x,y,lines,squeleton[squeleton.length-1],lastdir,c1);
+            create_squeleton(x,y,lines,squeleton[squeleton.length-2],lastdir,c2);
+            if (Math.random() < 0.7) {
+              squeleton.push([]);
+              create_squeleton(x,y,lines,squeleton[squeleton.length-1],lastdir,c3);
+            }
+            return;
+          }
 
           var c = [(local_dir+1)%4,(local_dir+3)%4];
           local_dir = Math.random() < proba_change_direction ? c[Math.floor(Math.random()*2)] : local_dir;
@@ -178,6 +224,12 @@ if (l1.p1.x - l2.p2.x == 0 && l1.p1.y - l2.p2.y == 0) return null;
           bound.push(0);
         }
         for (var i = 0; i < squeleton.length; i++) {
+
+          if (Array.isArray(squeleton[i])) {
+            compute_bound(squeleton[i],bound);
+            continue;
+          }
+
           var x = squeleton[i].x;
           var y = squeleton[i].y;
 
@@ -204,7 +256,14 @@ if (l1.p1.x - l2.p2.x == 0 && l1.p1.y - l2.p2.y == 0) return null;
       var draw_squeleton = function(bound,squeleton) {
         var n = new ArcEnCiel();
         for (var i = 0; i < squeleton.length; i++) {
+
+          if (Array.isArray(squeleton[i])) {
+            draw_squeleton(bound,squeleton[i]);
+            continue;
+          }
+
           if (i+1 > squeleton.length-1) break;
+
           ctx.beginPath();
           //var x = squeleton[i].x*340/(bound[1]-bound[0]);
           //var y = squeleton[i].y*340/(bound[1]-bound[0]);
@@ -225,7 +284,86 @@ if (l1.p1.x - l2.p2.x == 0 && l1.p1.y - l2.p2.y == 0) return null;
 
       var lines = [];
       var squeleton = [];
+      var block = [];
       create_squeleton(0,0,lines,squeleton);
+
+
+
+      var connections = {};
+      for (var i = 0; i < lines.length; i++) {
+
+        if (typeof connections[lines[i].p1.x+','+lines[i].p1.y] === 'undefined') {
+          connections[lines[i].p1.x+','+lines[i].p1.y] = [lines[i].p1];
+        }
+        if (typeof connections[lines[i].p2.x+','+lines[i].p2.y] === 'undefined') {
+          connections[lines[i].p2.x+','+lines[i].p2.y] = [lines[i].p2];
+        }
+
+        connections[lines[i].p1.x+','+lines[i].p1.y].push({
+          p1: lines[i].p1,
+          p2: {x:(lines[i].p1.x+lines[i].p2.x)/2,y:(lines[i].p1.y+lines[i].p2.y)/2}
+        });
+        connections[lines[i].p2.x+','+lines[i].p2.y].push({
+          p1:  {x:(lines[i].p1.x+lines[i].p2.x)/2,y:(lines[i].p1.y+lines[i].p2.y)/2},
+          p2: lines[i].p2
+        });
+      }
+
+      for (var i in connections) {
+        if (connections.hasOwnProperty(i)) {
+          var conn = connections[i];
+
+          var p = conn[0];
+
+          var local_bound = [p.x,p.y,p.x,p.y];
+
+          for (var i = 1; i < conn.length; i++) {
+            if (conn[i].p1.x > local_bound[2]) local_bound[2] = conn[i].p1.x;
+            if (conn[i].p1.x < local_bound[0]) local_bound[0] = conn[i].p1.x;
+            if (conn[i].p1.y > local_bound[1]) local_bound[1] = conn[i].p1.y;
+            if (conn[i].p1.y < local_bound[3]) local_bound[3] = conn[i].p1.y;
+
+            if (conn[i].p2.x > local_bound[2]) local_bound[2] = conn[i].p2.x;
+            if (conn[i].p2.x < local_bound[0]) local_bound[0] = conn[i].p2.x;
+            if (conn[i].p2.y > local_bound[1]) local_bound[1] = conn[i].p2.y;
+            if (conn[i].p2.y < local_bound[3]) local_bound[3] = conn[i].p2.y;
+          }
+
+          block.push(local_bound);
+        }
+      }
+
+      /*for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+
+        var p1_xmin = (line.p1.x > line.p2.x ? line.p2.x : line.p1.x);
+        var p1_ymin = (line.p1.y > line.p2.y ? line.p2.y : line.p1.y);
+        var p2_xmax = (line.p1.x > line.p2.x ? line.p1.x : line.p2.x);
+        var p2_ymax = (line.p1.y > line.p2.y ? line.p1.y : line.p2.y);
+
+        console.log(p2_xmax-p1_xmin,p2_xmax,p1_xmin);
+
+        if (Math.abs(p2_xmax-p1_xmin)<0.001 && Math.abs(p2_ymax-p1_ymin)<0.001) continue;
+
+        // add block
+        var b = {
+          x:p1_xmin,
+          y:p1_ymin,
+          width:(Math.abs(p2_xmax-p1_xmin)<0.001?(Math.floor(Math.random()*(500-200+1)+200)):Math.abs(p2_xmax-p1_xmin)-200),
+          height:(Math.abs(p2_ymax-p1_ymin)<0.001?(Math.floor(Math.random()*(500-200+1)+200)):Math.abs(p2_ymax-p1_ymin)-200)
+        };*/
+        //if (Math.abs(p2_xmax-p1_xmin)<0.001) b.x -= b.width/2;
+        //if (Math.abs(p2_ymax-p1_ymin)<0.001) b.y -= b.height/2;
+        /*var b = {
+          x:0,
+          y:0,
+          width:(p2_xmax-p1_xmin < 0.001 ? 100 : p2_xmax-p1_xmin),
+          height:(p2_ymax-p1_ymin < 0.001 ? 100 : p2_ymax-p1_ymin),
+        };
+        b.x = p1_xmin;
+        b.y = p1_ymin;*/
+      //  block.push(b);
+      //}
 
       var bound = [];
       compute_bound(squeleton,bound);
@@ -234,7 +372,8 @@ if (l1.p1.x - l2.p2.x == 0 && l1.p1.y - l2.p2.y == 0) return null;
 
 
       console.log(squeleton);
-
+      console.log(lines);
+      console.log(block);
 
 
       var key = {};
@@ -257,9 +396,54 @@ if (l1.p1.x - l2.p2.x == 0 && l1.p1.y - l2.p2.y == 0) return null;
         canvas.height = 700;
 
 
-        draw_squeleton(bound,squeleton);
+        //draw_squeleton(bound,squeleton);
+        var nn = new ArcEnCiel();
+        //ctx.globalAlpha = 0.2;
+        for (var i = 0; i < block.length; i++) {
+          ctx.beginPath();
+          ctx.arc((block[i][0]-wx)*scale+sx,(block[i][1]-wy)*scale+sy,50*scale,0,2*Math.PI,false);
 
-        
+          //ctx.rect((block[i][0]-wx)*scale+sx,(block[i][1]-wy)*scale+sy,block[i][2]*scale,block[i][3]*scale);
+          ctx.fillStyle = '#666';
+          //ctx.fillStyle = '#000';
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc((block[i][2]-wx)*scale+sx,(block[i][3]-wy)*scale+sy,50*scale,0,2*Math.PI,false);
+          ctx.fillStyle = '#666';
+          //ctx.fillStyle = '#000';
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo((block[i][0]-wx)*scale+sx,(block[i][1]-wy)*scale+sy);
+          ctx.lineTo((block[i][2]-wx)*scale+sx,(block[i][3]-wy)*scale+sy);
+          ctx.strokeStyle = '#666';
+          ctx.lineWidth = 5;
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+
+        var n = new ArcEnCiel();
+        //ctx.globalAlpha = 0.1;
+        for (var i = 0; i < lines.length; i++) {
+          ctx.beginPath();
+          ctx.moveTo((lines[i].p1.x-wx)*scale+sx,(lines[i].p1.y-wy)*scale+sy);
+          ctx.lineTo((lines[i].p2.x-wx)*scale+sx,(lines[i].p2.y-wy)*scale+sy);
+          ctx.strokeStyle = n.change();
+          ctx.lineWidth = 5;
+          ctx.stroke();
+        }
+        //ctx.globalAlpha = 1;
+
+        for (var h in connections) {
+          if (connections.hasOwnProperty(h)) {
+            ctx.beginPath();
+            ctx.arc((connections[h][0].x-wx)*scale+sx,(connections[h][0].y-wy)*scale+sy,100*scale,0,2*Math.PI,false);
+            ctx.fillStyle = '#000';
+            ctx.fill();
+          }
+        }
+
+
+
         ctx.setTransform(1,0,0,1,0,0);
         ctx.font = '20px Verdana';
         ctx.fillStyle = '#000';
@@ -284,7 +468,7 @@ if (l1.p1.x - l2.p2.x == 0 && l1.p1.y - l2.p2.y == 0) return null;
         if (key[90]) {
           scale = Math.min(5, scale * 1.1);
         } else if (key[65]) {
-          scale = Math.max(0.1, scale * (1 / 1.1));
+          scale = Math.max(0.01, scale * (1 / 1.1));
         };
       }
 
