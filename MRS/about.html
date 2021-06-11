@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>MRS Paris Chapter - À Propos</title>
+
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <link rel="stylesheet" href="fontawesome.min.css">
+    <script src="jquery-3.3.1.slim.min.js"></script>
+    <script src="popper.min.js"></script>
+    <script src="bootstrap.min.js"></script>
+
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href="style.css">
+
+    <style media="screen">
+      .member-item {
+        margin-bottom: 50px;
+      }
+      .member-photo {
+        position: relative;
+        width: 100%;
+        height: 0;
+        padding-bottom: 100%;
+        margin-bottom: 10px;
+      }
+      .member-photo > div {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+      .member-photo img {
+        max-width: 100%;
+        max-height: 100%;
+        height: inherit !important;
+        object-fit: cover;
+      }
+      .member-name {
+        color: rgba(137,19,56);
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .member-function {}
+      .member-mail > a {
+        color: rgba(137,19,56)!important;
+      }
+    </style>
+
+  </head>
+  <body>
+
+
+    <!-- Le Menu (présent sur toutes les pages) -->
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light navbar-menu">
+      <div class="container">
+        <a class="navbar-brand" href="#">
+          <img src="logo.png" width="198.7" height="50" alt="">
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">Accueil</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownArticles" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Articles
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdownArticles">
+                <a class="dropdown-item" href="interviews.html">Interviews</a>
+                <a class="dropdown-item" href="eventsreport.html">Comptes rendus d'évènements</a>
+              </div>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownEvent" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Évènements
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdownEvent">
+                <a class="dropdown-item" href="events.html">Annonces</a>
+                <a class="dropdown-item" href="project.html">Appels à projets</a>
+                <a class="dropdown-item" href="stage.html">Offre de stage</a>
+              </div>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownPartenaire" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Partenaires
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdownPartenaire">
+                <a class="dropdown-item" href="partners.html?target=labos">Laboratoires</a>
+                <a class="dropdown-item" href="partners.html?target=companies">Entreprises</a>
+                <a class="dropdown-item" href="partners.html?target=chapters">Chapters</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="partners.html?target=howtobecomepartners">Comment devenir partenaire ?</a>
+                <a class="dropdown-item" href="partners.html?target=partnerspresentation">Présentation de nos partenaires</a>
+              </div>
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="about.html">À Propos</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="contact.html">Contact</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sep-100"></div><div class="sep-25"></div>
+
+    <!-- Petite présentation du MRS Chapter -->
+    <div class="container">
+      <h1 class="title">À Propos</h1>
+      <div class="sep-25"></div>
+      <div class="row">
+        <div class="col-12 col-md-8">
+          <img class="image" src="photo1.png" alt="Notre équipe">
+        </div>
+        <div class="col-12 col-md-4">
+          <h2>Projet MRS Chapter</h2>
+          <p>Donec non augue velit. Duis sit amet leo nec velit volutpat commodo dapibus eget massa. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Phasellus auctor volutpat massa. Proin at elit neque. Nullam erat eros, sagittis eget tellus eu, tincidunt consectetur mauris. Praesent ac nibh non justo tempus pulvinar sit amet vel nunc. Sed suscipit tortor eget elit iaculis semper at sit amet purus. Quisque vulputate ex at molestie sagittis. Ut condimentum orci quis ante pharetra, a imperdiet massa bibendum. Quisque fermentum non risus ut mollis...</p>
+        </div>
+      </div>
+      <div class="sep-50"></div>
+      <div class="row">
+        <div class="col-12">
+          <h2>Mandats</h2>
+          <div class="sep-50"></div>
+          <h3>2020-2021</h3>
+          <div class="row">
+
+
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="member-item">
+                <div class="member-photo">
+                  <div>
+                    <img src="team/2020-2021/Christophe-Landry_Tiani.png" alt="">
+                  </div>
+                </div>
+                <div class="member-name">
+                  Christophe-Landry Tiani
+                </div>
+                <div class="member-function">
+                  Président
+                </div>
+                <div class="member-mail">
+                  <a href="mailto:christophe-landry.tiani@etu.u-paris.fr">christophe-landry.tiani@etu.u-paris.fr</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="member-item">
+                <div class="member-photo">
+                  <div>
+                    <img src="team/2020-2021/Larissa_Chaperman.png" alt="">
+                  </div>
+                </div>
+                <div class="member-name">
+                  Larissa Chaperman
+                </div>
+                <div class="member-function">
+                  Vice-Président
+                </div>
+                <div class="member-mail">
+                  <a href="mailto:larissa.chaperman@etu.u-paris.fr">larissa.chaperman@etu.u-paris.fr</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="member-item">
+                <div class="member-photo">
+                  <div>
+                    <img src="team/2020-2021/Maxence_Vanseveren.png" alt="">
+                  </div>
+                </div>
+                <div class="member-name">
+                  Maxence Vanseveren
+                </div>
+                <div class="member-function">
+                  Secrétaire
+                </div>
+                <div class="member-mail">
+                  <a href="mailto:maxence.vanseveren@etu.u-paris.fr">maxence.vanseveren@etu.u-paris.fr</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="member-item">
+                <div class="member-photo">
+                  <div>
+                    <img src="team/2020-2021/Louka_Yilmaz.png" alt="">
+                  </div>
+                </div>
+                <div class="member-name">
+                  Louka Yilmaz
+                </div>
+                <div class="member-function">
+                  Trésorier
+                </div>
+                <div class="member-mail">
+                  <a href="mailto:yilmazlouka@posteo.net">yilmazlouka@posteo.net</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="member-item">
+                <div class="member-photo">
+                  <div>
+                    <img src="team/member-female.png" alt="">
+                  </div>
+                </div>
+                <div class="member-name">
+                  Sendos Darwish
+                </div>
+                <div class="member-function">
+                  Secrétaire? Liaison doctorante?
+                </div>
+                <div class="member-mail">
+                  <a href="mailto:sendos.darwish1@outlook.com">sendos.darwish1@outlook.com</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="member-item">
+                <div class="member-photo">
+                  <div>
+                    <img src="team/2020-2021/Hakim_Djedid.png" alt="">
+                  </div>
+                </div>
+                <div class="member-name">
+                  Hakim Djedid
+                </div>
+                <div class="member-function">
+                  Communication
+                </div>
+                <div class="member-mail">
+                  <a href="mailto:hakim.djedid@etu.u-paris.fr">hakim.djedid@etu.u-paris.fr</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="member-item">
+                <div class="member-photo">
+                  <div>
+                    <img src="team/2020-2021/Marie-Charlotte_Dragassi.png" alt="">
+                  </div>
+                </div>
+                <div class="member-name">
+                  Marie-Charlotte Dragassi
+                </div>
+                <div class="member-function">
+                  Liaison avec l'industrie
+                </div>
+                <div class="member-mail">
+                  <a href="mailto:marie-charlotte.dragassi@etu.u-paris.fr">marie-charlotte.dragassi@etu.u-paris.fr</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="member-item">
+                <div class="member-photo">
+                  <div>
+                    <img src="team/2020-2021/Sandra_Vasilijevic.png" alt="">
+                  </div>
+                </div>
+                <div class="member-name">
+                  Sandra Vasilijević
+                </div>
+                <div class="member-function">
+                  Liaison U-Paris Labs
+                </div>
+                <div class="member-mail">
+                  <a href="mailto:sandra.​vasilijevic@etu.u-paris.fr">sandra.​vasilijevic@etu.u-paris.fr</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="member-item">
+                <div class="member-photo">
+                  <div>
+                    <img src="team/2020-2021/Raphael_Hanemian.png" alt="">
+                  </div>
+                </div>
+                <div class="member-name">
+                  Raphael Hanemian
+                </div>
+                <div class="member-function">
+                  Liaison U-Paris Ecole
+                </div>
+                <div class="member-mail">
+                  <a href="mailto:raphael.hanemian@etu.u-paris.fr">raphael.hanemian@etu.u-paris.fr</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="member-item">
+                <div class="member-photo">
+                  <div>
+                    <img src="team/member-male.png" alt="">
+                  </div>
+                </div>
+                <div class="member-name">
+                  Mario Araujo-rocha
+                </div>
+                <div class="member-function">
+                  Communication
+                </div>
+                <div class="member-mail">
+                  <a href="mailto:mario.araujo-rocha@etu.u-paris.fr">mario.araujo-rocha@u-paris.fr</a>
+                </div>
+              </div>
+            </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- Le Footer -->
+    <footer class="text-center bg-purple text-lg-start">
+
+      <!-- Social media -->
+      <section class="border-bottom">
+        <div class="container d-flex align-items-center justify-content-center justify-content-lg-between p-4">
+          <div class="d-none d-lg-block mr-lg-auto">
+            <span>Connectez-vous avec nous sur les réseaux sociaux:</span>
+          </div>
+          <div class="social-media ml-lg-auto">
+            <a href="" class="me-4 text-reset">
+              <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="" class="me-4 text-reset">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="" class="me-4 text-reset">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="" class="me-4 text-reset">
+              <i class="fab fa-linkedin"></i>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Liens  -->
+      <section class="border-bottom">
+        <div class="container text-center text-md-start mt-5">
+          <div class="row mt-3">
+            <div class="col-md-3 col-lg-4 col-xl-3 mx-auto mb-4">
+              <h6 class="text-uppercase fw-bold mb-4">
+                MRS Paris Chapter
+              </h6>
+              <p>
+                Sed eget arcu eget tortor posuere tempor ut quis nibh. Suspendisse potenti.
+                Sed et faucibus ligula, ac feugiat arcu. Nullam nec consequat mi, a consectetur libero.
+              </p>
+            </div>
+            <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mb-4">
+              <h6 class="text-uppercase fw-bold mb-4">
+                Partenaires
+              </h6>
+              <ul class="list-unstyled mb-0">
+                <li><a href="#" class="text-white">Laboratoires</a></li>
+                <li><a href="#" class="text-white">Entreprises</a></li>
+                <li><a href="#" class="text-white">Chapters</a></li>
+                <li><a href="#" class="text-white">Comment devenir partenaire ?</a></li>
+                <li><a href="#" class="text-white">Présentation de nos partenaires</a></li>
+              </ul>
+            </div>
+            <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mb-4">
+              <h6 class="text-uppercase fw-bold mb-4">
+                Navigation
+              </h6>
+              <ul class="list-unstyled mb-0">
+                <li><a href="#" class="text-white">Articles</a></li>
+                <li><a href="#" class="text-white">Évènements</a></li>
+                <li><a href="#" class="text-white">À Propos</a></li>
+                <li><a href="#" class="text-white">Contact</a></li>
+              </ul>
+            </div>
+            <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mb-md-0 mb-4">
+              <h6 class="text-uppercase fw-bold mb-4">
+                Contact
+              </h6>
+              <p><i class="fas fa-home me-3"></i> Sophie Germain, 8 Place Aurélie Nemours, 75013 Paris</p>
+              <p>
+                <i class="fas fa-envelope me-3"></i>
+                info@example.com
+              </p>
+              <p><i class="fas fa-phone me-3"></i> + 00 00 00 00 00</p>
+              <p><i class="fas fa-print me-3"></i> + 00 00 00 00 00</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Logo -->
+      <div class="w-100 p-4 d-flex justify-content-center">
+        <div id="footer_logo">
+          <div id="IA"><img alt="investir l'avenir" src="investiravenir.png" width="60" scale="0"></div>
+          <div id="FUP"><a href="https://fondation-uparis.org/"><img alt="fondation UP" src="FUP_Blanc.png" width="160" scale="0"></a></div>
+          <div id="cicleU"><a href="https://www.circle-u.eu/"><img alt="cicleU" src="Circle-U.png" width="140" scale="0"></a></div>
+          <div id="udice"><a href="http://www.udice.org/"><img alt="udice" src="udice.png" width="160" scale="0"></a></div>
+        </div>
+      </div>
+
+      <!-- Copyright -->
+      <div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.1);">
+        2021 ©
+        <a class="text-reset fw-bold" href="#">MRS Paris Chapter</a> (Maquette par Lemmy Briot)
+      </div>
+
+
+    </footer>
+
+  </body>
+</html>

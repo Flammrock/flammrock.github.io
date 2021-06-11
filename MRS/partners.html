@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>MRS Paris Chapter - Partenaires</title>
+
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <link rel="stylesheet" href="fontawesome.min.css">
+    <script src="jquery-3.3.1.slim.min.js"></script>
+    <script src="popper.min.js"></script>
+    <script src="bootstrap.min.js"></script>
+
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href="style.css">
+
+    <style media="screen">
+    </style>
+
+    <script type="text/javascript">
+      var parts = window.location.search.substr(1).split("&");
+      var $_GET = {};
+      for (var i = 0; i < parts.length; i++) {
+        var temp = parts[i].split("=");
+        $_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
+      }
+      $( document ).ready(function() {
+        var h = 80;
+        if ($_GET['target']=='howtobecomepartners') {
+          $([document.documentElement, document.body]).animate({
+            scrollTop: $("#howtobecomepartners").offset().top-h
+          }, 100);
+        } else if ($_GET['target']=='partnerspresentation') {
+          $([document.documentElement, document.body]).animate({
+            scrollTop: $("#partnerspresentation").offset().top-h
+          }, 100);
+        } else if ($_GET['target']=='labos') {
+          $('#collapseOne').addClass('show');
+          $([document.documentElement, document.body]).animate({
+            scrollTop: $("#headingOnek").offset().top-h
+          }, 100);
+        } else if ($_GET['target']=='companies') {
+          $('#collapseTwo').addClass('show');
+          $([document.documentElement, document.body]).animate({
+            scrollTop: $("#headingTwok").offset().top-h
+          }, 100);
+        } else if ($_GET['target']=='chapters') {
+          $('#collapseThree').addClass('show');
+          $([document.documentElement, document.body]).animate({
+            scrollTop: $("#headingThreek").offset().top-h
+          }, 100);
+        }
+      });
+    </script>
+
+  </head>
+  <body>
+
+
+    <!-- Le Menu (présent sur toutes les pages) -->
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light navbar-menu">
+      <div class="container">
+        <a class="navbar-brand" href="#">
+          <img src="logo.png" width="198.7" height="50" alt="">
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">Accueil</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownArticles" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Articles
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdownArticles">
+                <a class="dropdown-item" href="interviews.html">Interviews</a>
+                <a class="dropdown-item" href="eventsreport.html">Comptes rendus d'évènements</a>
+              </div>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownEvent" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Évènements
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdownEvent">
+                <a class="dropdown-item" href="events.html">Annonces</a>
+                <a class="dropdown-item" href="project.html">Appels à projets</a>
+                <a class="dropdown-item" href="stage.html">Offre de stage</a>
+              </div>
+            </li>
+            <li class="nav-item dropdown active">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownPartenaire" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Partenaires
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdownPartenaire">
+                <a class="dropdown-item" href="partners.html?target=labos">Laboratoires</a>
+                <a class="dropdown-item" href="partners.html?target=companies">Entreprises</a>
+                <a class="dropdown-item" href="partners.html?target=chapters">Chapters</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="partners.html?target=howtobecomepartners">Comment devenir partenaire ?</a>
+                <a class="dropdown-item" href="partners.html?target=partnerspresentation">Présentation de nos partenaires</a>
+              </div>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="about.html">À Propos</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="contact.html">Contact</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sep-100"></div><div class="sep-25"></div>
+
+    <div class="container">
+      <h1 class="title">Partenaires</h1>
+      <div class="sep-25"></div>
+      <div class="row">
+        <div class="col-12 col-md-4">
+          <p>Donec non augue velit. Duis sit amet leo nec velit volutpat commodo dapibus eget massa. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Phasellus auctor volutpat massa. Proin at elit neque. Nullam erat eros, sagittis eget tellus eu, tincidunt consectetur mauris. Praesent ac nibh non justo tempus pulvinar sit amet vel nunc. Sed suscipit tortor eget elit iaculis semper at sit amet purus. Quisque vulputate ex at molestie sagittis. Ut condimentum orci quis ante pharetra, a imperdiet massa bibendum. Quisque fermentum non risus ut mollis...</p>
+        </div>
+        <div class="col-12 col-md-8">
+          <img class="image" src="dummy.jpg" alt="">
+        </div>
+      </div>
+      <div class="sep-50"></div>
+      <div class="accordion" id="accordionExample">
+        <div class="card">
+          <div id="headingOnek"></div>
+          <div class="card-header" id="headingOne" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+            <h2 class="mb-0">
+              <button class="btn collapsed" type="button">
+                Laboratoires Partenaires
+              </button>
+            </h2>
+          </div>
+
+          <div id="collapseOne" class="collapse in" aria-labelledby="headingOne" data-parent="#accordionExample">
+            <div class="card-body">
+              Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+            </div>
+          </div>
+        </div>
+
+        <div id="headingTwok"></div>
+        <div class="card">
+          <div class="card-header" id="headingTwo" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+            <h2 class="mb-0">
+              <button class="btn collapsed" type="button">
+                Entreprises Partenaires
+              </button>
+            </h2>
+          </div>
+          <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+            <div class="card-body">
+              Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+            </div>
+          </div>
+        </div>
+
+        <div id="headingThreek"></div>
+        <div class="card">
+          <div class="card-header" id="headingThree" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+            <h2 class="mb-0">
+              <button class="btn collapsed" type="button">
+                Chapters
+              </button>
+            </h2>
+          </div>
+          <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
+            <div class="card-body">
+              Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sep-50"></div>
+      <div class="row">
+        <div class="col-12 col-md-8">
+          <h3 id="howtobecomepartners">Comment devenir partenaire ?</h3>
+          <p>Ut sed viverra risus. Sed lobortis pulvinar lacus congue mattis. In id sem vitae metus varius vestibulum vestibulum in eros. Suspendisse porttitor tellus vestibulum, dictum urna nec, viverra ante. Praesent at risus quam. Nam eu nisi fringilla, lobortis mi in, convallis dui. Curabitur tristique tempus nunc, consectetur feugiat sapien lobortis vitae. Mauris elementum commodo purus. Etiam bibendum congue ligula eget vehicula. Etiam leo mi, pulvinar id aliquet efficitur, semper vel tellus. Praesent nec erat finibus, sollicitudin risus non, gravida ipsum. Cras condimentum auctor magna. Ut ullamcorper sapien eget turpis pretium volutpat. Sed diam ex, luctus id sem sed, rhoncus imperdiet sem. Vestibulum imperdiet sodales est ac vestibulum. Aenean urna sem, accumsan laoreet venenatis facilisis, malesuada at turpis.</p>
+        </div>
+        <div class="col-12 col-md-4">
+          <img class="image" src="dummy.jpg" alt="">
+        </div>
+      </div>
+      <div class="sep-50"></div>
+      <div class="row">
+        <div class="col-12">
+          <h3 id="partnerspresentation">Présentation de nos partenaires</h3>
+          <p>Ut sed viverra risus. Sed lobortis pulvinar lacus congue mattis. In id sem vitae metus varius vestibulum vestibulum in eros. Suspendisse porttitor tellus vestibulum, dictum urna nec, viverra ante. Praesent at risus quam. Nam eu nisi fringilla, lobortis mi in, convallis dui. Curabitur tristique tempus nunc, consectetur feugiat sapien lobortis vitae. Mauris elementum commodo purus. Etiam bibendum congue ligula eget vehicula. Etiam leo mi, pulvinar id aliquet efficitur, semper vel tellus. Praesent nec erat finibus, sollicitudin risus non, gravida ipsum. Cras condimentum auctor magna. Ut ullamcorper sapien eget turpis pretium volutpat. Sed diam ex, luctus id sem sed, rhoncus imperdiet sem. Vestibulum imperdiet sodales est ac vestibulum. Aenean urna sem, accumsan laoreet venenatis facilisis, malesuada at turpis.</p>
+        </div>
+      </div>
+      <div class="sep-50"></div>
+    </div>
+
+
+
+    <!-- Le Footer -->
+    <footer class="text-center bg-purple text-lg-start">
+
+      <!-- Social media -->
+      <section class="border-bottom">
+        <div class="container d-flex align-items-center justify-content-center justify-content-lg-between p-4">
+          <div class="d-none d-lg-block mr-lg-auto">
+            <span>Connectez-vous avec nous sur les réseaux sociaux:</span>
+          </div>
+          <div class="social-media ml-lg-auto">
+            <a href="" class="me-4 text-reset">
+              <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="" class="me-4 text-reset">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="" class="me-4 text-reset">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="" class="me-4 text-reset">
+              <i class="fab fa-linkedin"></i>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Liens  -->
+      <section class="border-bottom">
+        <div class="container text-center text-md-start mt-5">
+          <div class="row mt-3">
+            <div class="col-md-3 col-lg-4 col-xl-3 mx-auto mb-4">
+              <h6 class="text-uppercase fw-bold mb-4">
+                MRS Paris Chapter
+              </h6>
+              <p>
+                Sed eget arcu eget tortor posuere tempor ut quis nibh. Suspendisse potenti.
+                Sed et faucibus ligula, ac feugiat arcu. Nullam nec consequat mi, a consectetur libero.
+              </p>
+            </div>
+            <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mb-4">
+              <h6 class="text-uppercase fw-bold mb-4">
+                Partenaires
+              </h6>
+              <ul class="list-unstyled mb-0">
+                <li><a href="#" class="text-white">Laboratoires</a></li>
+                <li><a href="#" class="text-white">Entreprises</a></li>
+                <li><a href="#" class="text-white">Chapters</a></li>
+                <li><a href="#" class="text-white">Comment devenir partenaire ?</a></li>
+                <li><a href="#" class="text-white">Présentation de nos partenaires</a></li>
+              </ul>
+            </div>
+            <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mb-4">
+              <h6 class="text-uppercase fw-bold mb-4">
+                Navigation
+              </h6>
+              <ul class="list-unstyled mb-0">
+                <li><a href="#" class="text-white">Articles</a></li>
+                <li><a href="#" class="text-white">Évènements</a></li>
+                <li><a href="#" class="text-white">À Propos</a></li>
+                <li><a href="#" class="text-white">Contact</a></li>
+              </ul>
+            </div>
+            <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mb-md-0 mb-4">
+              <h6 class="text-uppercase fw-bold mb-4">
+                Contact
+              </h6>
+              <p><i class="fas fa-home me-3"></i> Sophie Germain, 8 Place Aurélie Nemours, 75013 Paris</p>
+              <p>
+                <i class="fas fa-envelope me-3"></i>
+                info@example.com
+              </p>
+              <p><i class="fas fa-phone me-3"></i> + 00 00 00 00 00</p>
+              <p><i class="fas fa-print me-3"></i> + 00 00 00 00 00</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Logo -->
+      <div class="w-100 p-4 d-flex justify-content-center">
+        <div id="footer_logo">
+          <div id="IA"><img alt="investir l'avenir" src="investiravenir.png" width="60" scale="0"></div>
+          <div id="FUP"><a href="https://fondation-uparis.org/"><img alt="fondation UP" src="FUP_Blanc.png" width="160" scale="0"></a></div>
+          <div id="cicleU"><a href="https://www.circle-u.eu/"><img alt="cicleU" src="Circle-U.png" width="140" scale="0"></a></div>
+          <div id="udice"><a href="http://www.udice.org/"><img alt="udice" src="udice.png" width="160" scale="0"></a></div>
+        </div>
+      </div>
+
+      <!-- Copyright -->
+      <div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.1);">
+        2021 ©
+        <a class="text-reset fw-bold" href="#">MRS Paris Chapter</a> (Maquette par Lemmy Briot)
+      </div>
+
+
+    </footer>
+
+  </body>
+</html>
