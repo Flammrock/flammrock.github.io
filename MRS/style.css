@@ -171,8 +171,11 @@
 #footer_logo #FUP {
   height: 70px;
   vertical-align: top;
-  padding: 11.1px 20px 17.1px 16px;
-  border-right: 1px solid #fff;
+  padding: 0px 20px 0px 16px;
+}
+#footer_logo #FUP img {
+  position: relative;
+  top:-45px;
 }
 #footer_logo #cicleU {
   height: 70px;
