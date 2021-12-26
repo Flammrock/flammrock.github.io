@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>Collision Particle</title>
@@ -35,9 +36,9 @@
                     return new Point(this.x,this.y)
                 }
 
-                }
+            }
 
-                class Line {
+            class Line {
 
                 constructor(a,b) {
                     this.a = a.clone()
@@ -52,9 +53,9 @@
                     return new Vector(this.b.x-this.a.x,this.b.y-this.a.y)
                 }
 
-                }
+            }
 
-                class Vector {
+            class Vector {
 
                 static ZERO = new Vector(0,0)
 
@@ -134,11 +135,11 @@
                     return new Vector(radius*Math.cos(angle),radius*Math.sin(angle))
                 }
 
-                }
+            }
 
 
 
-                class Particle {
+            class Particle {
 
                 constructor(position,velocity) {
                     this.position = position.clone()
@@ -170,10 +171,10 @@
                     Graphics.point(this.position,'red')
                 }
 
-                }
+            }
 
 
-                class Graphics {
+            class Graphics {
 
                 static canvas = null
                 static ctx = null
@@ -260,10 +261,10 @@
                     Graphics.camera = new Point(canvas.width/2,canvas.height/2)
                 }
 
-                }
+            }
 
 
-                class Renderer {
+            class Renderer {
 
                 constructor(fps, callback) {
 
@@ -317,11 +318,11 @@
                     }
                 }
 
-                }
+            }
 
 
-                // when dom is loaded
-                document.addEventListener('DOMContentLoaded', (event) => {
+            // when dom is loaded
+            document.addEventListener('DOMContentLoaded', (event) => {
 
                 Graphics.init() // init all the graphics system
 
@@ -389,7 +390,7 @@
                 // then, finally, we can start the simulation
                 renderer.start()
 
-                })
+            })
         </script>
     </body>
 </html>
