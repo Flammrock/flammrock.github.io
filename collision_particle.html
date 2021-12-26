@@ -1,0 +1,395 @@
+<html>
+    <head>
+        <title>Collision Particle</title>
+        <style>
+            html, body {
+                overflow: hidden;
+                margin: 0;
+                padding: 0;
+            }
+            #header {
+                position: fixed;
+                top: 100px;
+                left:50%;
+                transform: translateX(-50%);
+                width:30%;
+                text-align: center;
+                font: 20px Verdana;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="header">Reload to have a new random configuration!</div>
+        <canvas id="canvas"></canvas>
+        <script>
+            class Point {
+
+                static ZERO = new Point(0,0)
+
+                constructor(x,y) {
+                    this.x = typeof x === 'number' ? x : 0
+                    this.y = typeof y === 'number' ? y : 0
+                }
+
+                clone() {
+                    return new Point(this.x,this.y)
+                }
+
+                }
+
+                class Line {
+
+                constructor(a,b) {
+                    this.a = a.clone()
+                    this.b = b.clone()
+                }
+
+                clone() {
+                    return new Line(this.a,this.b)
+                }
+
+                getVector() {
+                    return new Vector(this.b.x-this.a.x,this.b.y-this.a.y)
+                }
+
+                }
+
+                class Vector {
+
+                static ZERO = new Vector(0,0)
+
+                constructor(x,y) {
+                    this.x = typeof x === 'number' ? x : 0
+                    this.y = typeof y === 'number' ? y : 0
+                }
+
+                clone() {
+                    return new Vector(this.x,this.y)
+                }
+
+                length() {
+                    return Math.sqrt(this.dot(this))
+                }
+
+                normalize() {
+                    let length = this.length()
+                    let x = this.x/length
+                    let y = this.y/length
+                    return new Vector(x,y)
+                }
+
+                dot(vector) {
+                    return this.x*vector.x + this.y*vector.y
+                }
+
+                add(vector) {return new Vector(this.x + vector.x,this.y + vector.y)}
+
+                sub(vector) {return new Vector(this.x - vector.x,this.y - vector.y)}
+
+                addScalar(scalar) {return new Vector(this.x + scalar,this.y + scalar)}
+                subScalar(scalar) {return new Vector(this.x - scalar,this.y - scalar)}
+                mulScalar(scalar) {return new Vector(this.x * scalar,this.y * scalar)}
+                divScalar(scalar) {return new Vector(this.x / scalar,this.y / scalar)}
+
+                project(vector) {
+
+                    // By definition, we have :
+                    //     A.B = |A|*|B|*cos(alpha)
+                    // also :
+                    //     cos(alpha) = A.B / |A|*|B|
+                    // then :
+                    //     |C| = cos(alpha) * |B|
+                    // C is the projected of B on A
+                    // finally :
+                    //     C = ((A.B / |A|*|B|) * |B|) * A/|A|
+                    // =>  C = (A.B / |A|) * A/|A|
+
+                    // compute the dot product to get the projected distance of this vector to vector
+                    let dot = this.dot(vector)
+
+                    // normalize the vector (to get the direction)
+                    let n = vector.normalize()
+
+                    // then compute the new vector on this direction
+                    let x = (dot/vector.length())*n.x
+                    let y = (dot/vector.length())*n.y
+
+                    return new Vector(x,y)
+                }
+
+                reflexion(vector) {
+                    let ortho = new Vector(vector.y,-vector.x) // compute the orthogonal
+                    let p1 = this.project(vector)
+                    let p2 = this.project(ortho)
+                    return Vector.ZERO.sub(p2).add(p1) // just inverse the orthogonal component on the axes defined by the vector
+                }
+
+                static random(radius) {
+                    let angle = Math.random()*2*Math.PI
+                    let r = Math.random()*2*radius-radius
+                    return Vector.fromPolar(r,angle)
+                }
+
+                static fromPolar(radius,angle) {
+                    return new Vector(radius*Math.cos(angle),radius*Math.sin(angle))
+                }
+
+                }
+
+
+
+                class Particle {
+
+                constructor(position,velocity) {
+                    this.position = position.clone()
+                    this.velocity = velocity.clone()
+
+                    this.path = [] // used for adding a trail to the particle (not optimized)
+
+                }
+
+                update(deltaT,callback) {
+                    this.position = this.position.add(this.velocity.mulScalar(deltaT)) // euler integration
+                    callback(this) // pass the execution thread to a function by callback
+                }
+
+                dist(point) {
+                    return new Line(this.position,point).getVector().length() // distance between that particle with a point
+                }
+
+                draw() {
+                    this.path.push(this.position.clone()) // add last position to the trail
+
+                    // draw the trail
+                    for (let i = 1; i < this.path.length; i++) {
+                        Graphics.line(new Line(this.path[i-1],this.path[i]),'green')
+                    }
+                    //while(this.path.length>100) this.path.shift() // control the size of the trail
+
+                    // draw the particle
+                    Graphics.point(this.position,'red')
+                }
+
+                }
+
+
+                class Graphics {
+
+                static canvas = null
+                static ctx = null
+                static camera = new Point(0,0) // the camera is a simple translation (no zoom system)
+
+                static init() {
+                    // get the HTML5 Canvas element in the dom
+                    Graphics.canvas = document.getElementById('canvas')
+
+                    // get the context 2D on that canvas
+                    Graphics.ctx = Graphics.canvas.getContext('2d')
+
+                    let canvas = Graphics.canvas
+                    canvas.style.cssText = `
+                        position:fixed;
+                        top:0;
+                        left:0;
+                        width:100%;
+                        height:100%;
+                    `
+                    canvas.width = window.innerWidth
+                    canvas.height = window.innerHeight
+
+                    Graphics.camera = new Point(canvas.width/2,canvas.height/2) // move the camera to the center
+                }
+
+                static save() {
+                    let ctx = Graphics.ctx
+                    ctx.save() // save the current context
+                    ctx.translate(Graphics.camera.x,Graphics.camera.y) // apply the camera on the drawing context
+                    return ctx
+                }
+
+                static restore() {
+                    let ctx = Graphics.ctx
+                    ctx.restore() // restore the previous context
+                }
+
+                static line(line,color,width) {
+                    let ctx = Graphics.save()
+                    ctx.beginPath()
+                    ctx.moveTo(line.a.x,line.a.y)
+                    ctx.lineTo(line.b.x,line.b.y)
+                    ctx.strokeStyle = color
+                    ctx.lineWidth = typeof width === 'number' ? width : 1
+                    ctx.stroke()
+                    Graphics.restore()
+                }
+
+                static vector(vector,color,width) {
+                    let ctx = Graphics.save()
+                    ctx.beginPath()
+                    ctx.moveTo(0,0)
+                    ctx.lineTo(vector.x,vector.y)
+                    ctx.strokeStyle = color
+                    ctx.lineWidth = typeof width === 'number' ? width : 1
+                    ctx.stroke()
+                    Graphics.restore()
+                }
+
+                static circle(center,radius,color) {
+                    let ctx = Graphics.save()
+                    ctx.beginPath()
+                    ctx.arc(center.x,center.y,radius,0,Math.PI*2,false)
+                    ctx.strokeStyle = color
+                    ctx.stroke()
+                    Graphics.restore()
+                }
+
+                static point(point,color,radius) {
+                    radius = typeof radius === 'number' ? radius : 2
+                    let ctx = Graphics.save()
+                    ctx.beginPath()
+                    ctx.arc(point.x,point.y,radius,0,Math.PI*2,false)
+                    ctx.fillStyle = color
+                    ctx.fill()
+                    Graphics.restore()
+                }
+
+                static resize() {
+                    let canvas = Graphics.canvas
+                    canvas.width = window.innerWidth
+                    canvas.height = window.innerHeight
+                    Graphics.camera = new Point(canvas.width/2,canvas.height/2)
+                }
+
+                }
+
+
+                class Renderer {
+
+                constructor(fps, callback) {
+
+                    let delay = 1000 / fps
+                    let time = null
+                    let frame = -1
+                    let lastTimestamp = null
+                    let tref = null
+
+                    let that = this
+
+                    let loop = (timestamp) => {
+                        if (time === null) time = timestamp
+                        var seg = Math.floor((timestamp - time) / delay)
+                        if (seg > frame) {
+                            frame = seg
+                            callback({
+                                time: timestamp,
+                                frame: frame,
+                                deltaT: (timestamp - lastTimestamp) / 1000 // compute deltaT used by euler method
+                            })
+                            lastTimestamp = timestamp
+                        }
+                        if (that.isPlaying) tref = requestAnimationFrame(loop)
+                    }
+
+                    this.isPlaying = false
+
+                    this.frameRate = (newfps) => {
+                        if (!arguments.length) return fps
+                        fps = newfps
+                        delay = 1000 / fps
+                        frame = -1
+                        time = null
+                    }
+                    
+                    this.start = () => {
+                        if (!this.isPlaying) {
+                            this.isPlaying = true
+                            tref = requestAnimationFrame(loop)
+                        }
+                    }
+                    
+                    this.pause = function() {
+                        if (this.isPlaying) {
+                            cancelAnimationFrame(tref)
+                            this.isPlaying = false
+                            time = null
+                            frame = -1
+                        }
+                    }
+                }
+
+                }
+
+
+                // when dom is loaded
+                document.addEventListener('DOMContentLoaded', (event) => {
+
+                Graphics.init() // init all the graphics system
+
+                let radius = 200             // radius of the circle
+                let center = new Vector(0,0) // center of the circle
+
+                // only one particle but this can be extend to multiple particle with no effort
+                //new Vector(radius*0.8*Math.cos(2*Math.PI/3),-radius*0.8*Math.sin(2*Math.PI/3)).add(center)
+                let particle = new Particle(Vector.random(radius),new Vector(200,-200))
+
+                let FPS = 30 // control the smoothest of the "animation"
+
+                // our draw function that will be call to draw each frame
+                let draw = (deltaT) => {
+
+                    Graphics.resize() // resize and clear the context to draw a new frame
+
+                    Graphics.circle(center,radius,'blue') // draw the circle
+
+                    // TODO: add the remaining velocity to the post collision position to preserve momentum in time
+                    particle.update(deltaT,(that) => {
+
+                        // if our particle is outside the circle
+                        if (that.dist(center) > radius) {
+
+                            let vel = that.velocity.normalize() // just used for the direction
+
+                            // cancel the move because of collision
+                            that.position = that.position.sub(that.velocity.mulScalar(deltaT))
+
+                            // we solve : (P + Vt - O)^2 = r^2
+                            //   P -> position (vector)
+                            //   V -> velocity (vector)
+                            //   t -> parameter (scalar)
+                            //   O -> center of circle (vector)
+                            //   r -> radius (scalar)
+                            // basically, we solve this equation to find the intersection between the particle and the circle
+                            let v = new Line(center,that.position).getVector()
+                            let a = vel.dot(vel)
+                            let b = 2 * vel.dot(v)
+                            let c = v.dot(v) - radius*radius
+                            let disc = b*b - 4*a*c
+
+
+                            if (disc >= 0) {
+                                let t =  (-b + Math.sqrt(disc)) / (2 * a) // get the solution
+                                let p = that.position.add(vel.mulScalar(t)) // compute the point
+                                let tangent = new Vector(p.y-center.y,-p.x+center.x) // compute the tangent
+                                that.position = p // move the particule to the border of the circle
+                                that.velocity = that.velocity.reflexion(tangent) // change the velocity by reflexion
+                            }
+
+                        }
+                    })
+
+                    particle.draw() // draw the particle (and the trail)
+
+                }
+
+                // create a renderer at specified fps
+                let renderer = new Renderer(FPS, (e) => {
+                    draw(e.deltaT)
+                })
+
+                // then, finally, we can start the simulation
+                renderer.start()
+
+                })
+        </script>
+    </body>
+</html>
