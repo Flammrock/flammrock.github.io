@@ -17,9 +17,28 @@
     font-style: normal;
   }
     img {
+       position: relative;
+       float: right;
       width: 70%;
       height: auto;
-      margin-left: 15%;
+      margin-right: 5%;
+      margin-bottom: 10px;
+    }
+    .iframe-container {
+      position: relative;
+      float: right;
+      width: 70%;
+      padding-bottom: 39.375%;
+      height: 0;
+       margin-right: 5%;
+       margin-bottom: 10px;
+    }
+    .iframe-container > iframe {
+     position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     }
     a {
         all: unset;
@@ -89,7 +108,7 @@
   </style>
 </head>
 <body>
-    <a href="?v=1.0.7&page=0"><div class="header">CHRISTOPHE-LANDRY</div></a>
+    <a href="?v=1.0.8&page=0"><div class="header">CHRISTOPHE-LANDRY</div></a>
   <div id="data"></div>
   <script>
     var link = "https://raw.githubusercontent.com/Flammrock/flammrock.github.io/master/statictest/liens.txt?" + new Date().getTime();
@@ -98,6 +117,7 @@
     
     var youtube_regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     var google_image_regex = /^(?:(?:https?:)?\/\/)drive\.google\.com\/file\/d\/(.*)\/view\?usp=sharing$/;
+    var pellicule_regex = /pellicule\:/;
     
     var gettype = function(url) {
         var mode = false;
@@ -107,11 +127,13 @@
         if (youtube_regex.test(url)) {
             mode = 1;
             id = url.match(youtube_regex)[1];
-            html = '<iframe width="560" height="315" src="https://www.youtube.com/embed/'+id+'" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><br />';
+            html = '<div class="iframe-container"><iframe src="https://www.youtube.com/embed/'+id+'" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><br />';
         } else if (google_image_regex.test(url)) {
             mode = 2;
             id = url.match(google_image_regex)[1];
             html = "<img src=\"https://drive.google.com/uc?export=view&id="+id+"\"><br />";
+        } else if (pellicule_regex.test(url)) {
+            mode = 3;
         }
         
         return {
@@ -128,41 +150,36 @@
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-           //console.log(xhttp.responseText);
+           console.log(xhttp.responseText);
            var links = xhttp.responseText.split('\n');
            var text = "";
-           var datalinks = [];
+           var datalinks = [[]];
            var m2 = 0;
+           var m3 = 0;
            for (var i = 0; i < links.length; i++) {
                var r = gettype(links[i].trim());
                if (r.mode) {
-                   datalinks.push({
+                   datalinks[m3].push({
                       url: links[i].trim(),
                       type: r
                    });
                    if (r.mode==2) m2++;
+                   if (r.mode==3) {
+                        m3++;
+                        datalinks.push([]);
+                   }
                }
            }
            var itemscount = 0;
-           var pages = Math.ceil(m2 / items_per_page) + 1;
-           for (var i = 0; i < datalinks.length; i++) {
-               if (page==0) {
-                   if (datalinks[i].type.mode==1) {
-                        text += datalinks[i].type.html;
-                   }
-               } else {
-                  if (datalinks[i].type.mode==2) {
-                        if (itemscount >= items_per_page * (page-1) && itemscount < items_per_page * (page)) {
-                            text += datalinks[i].type.html;
-                        }
-                        if (itemscount >= items_per_page * (page)) break;
-                        itemscount++;
-                   }
-               }
+           var pages = m3 + 1;
+           if (page < 0) page = 0;
+           if (page > m3) page = m3;
+           for (var i = 0; i < datalinks[page].length; i++) {
+                text += datalinks[page][i].type.html;
            }
            var pagestext = "";
            for (var i = 0; i < pages; i++) {
-               pagestext += '<a class="'+(i==page?"active":"")+'" style="margin:3px;" href="?v=1.0.7&page='+i+'">'+i+'</a>';
+               pagestext += '<a class="'+(i==page?"active":"")+'" style="margin:3px;" href="?v=1.0.8&page='+i+'">'+i+'</a>';
            }
            document.getElementById('data').innerHTML = '<br /><br /><br /><div class="pagination">' + pagestext + '</div>' + '<br /><br /><br />' + text;
         }
