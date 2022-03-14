@@ -22,7 +22,7 @@
     
     
     var youtube_regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/gi
-    var google_image_regex = /^((?:https?:)?\/\/)drive\.google\.com\/file\/d\/(.*)\/view\?usp=sharing$/;
+    var google_image_regex = /^(?:(?:https?:)?\/\/)drive\.google\.com\/file\/d\/(.*)\/view\?usp=sharing$/;
     
     var gettype = function(url) {
         var mode = false;
@@ -32,7 +32,7 @@
         if (youtube_regex.test(url)) {
             mode = 1;
             id = url.match(youtube_regex)[1];
-            html = "<iframe src=\"https://www.youtube.com/embed/"+id+"></iframe><br />";
+            html = '<iframe width="560" height="315" src="https://www.youtube.com/embed/'+id+'" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
         } else if (google_image_regex.test(url)) {
             mode = 2;
             id = url.match(google_image_regex)[1];
@@ -57,6 +57,7 @@
            var links = xhttp.responseText.split('\n');
            var text = "";
            var datalinks = [];
+           var m2 = 0;
            for (var i = 0; i < links.length; i++) {
                var r = gettype(links[i].trim());
                if (r.mode) {
@@ -64,10 +65,11 @@
                       url: links[i].trim(),
                       type: r
                    });
+                   if (r.mode==2) m2++;
                }
            }
            var itemscount = 0;
-           var pages = Math.ceil(datalinks.length / items_per_page);
+           var pages = Math.ceil(m2 / items_per_page) + 1;
            for (var i = 0; i < datalinks.length; i++) {
                if (page==0) {
                    if (datalinks[i].type.mode==1) {
@@ -75,18 +77,17 @@
                    }
                } else {
                   if (datalinks[i].type.mode==2) {
-                  console.log(page,itemscount,items_per_page,itemscount > items_per_page * page);
-                        if (itemscount > items_per_page * page) {
+                        if (itemscount >= items_per_page * (page-1) && itemscount < items_per_page * (page)) {
                             text += datalinks[i].type.html;
                         }
+                        if (itemscount >= items_per_page * (page)) break;
                         itemscount++;
-                       if (itemscount + items_per_page >= items_per_page * page) break;
                    }
                }
            }
            var pagestext = "";
            for (var i = 0; i < pages; i++) {
-               pagestext += '<a href="?page='+i+'">'+i+'</a>';
+               pagestext += '<a style="margin:3px;" href="?page='+i+'">'+i+'</a>';
            }
            document.getElementById('data').innerHTML = pagestext + '<br />' + text;
         }
