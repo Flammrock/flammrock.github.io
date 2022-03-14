@@ -89,7 +89,7 @@
   </style>
 </head>
 <body>
-    <a href="?v=1.0.6&page=0"><div class="header">CHRISTOPHE-LANDRY</div></a>
+    <a href="?v=1.0.7&page=0"><div class="header">CHRISTOPHE-LANDRY</div></a>
   <div id="data"></div>
   <script>
     var link = "https://raw.githubusercontent.com/Flammrock/flammrock.github.io/master/statictest/liens.txt?" + new Date().getTime();
@@ -161,9 +161,8 @@
                }
            }
            var pagestext = "";
-           console.log(page);
            for (var i = 0; i < pages; i++) {
-               pagestext += '<a class="'+(i==page?"active":"")+'" style="margin:3px;" href="?v=1.0.6&page='+i+'">'+i+'</a>';
+               pagestext += '<a class="'+(i==page?"active":"")+'" style="margin:3px;" href="?v=1.0.7&page='+i+'">'+i+'</a>';
            }
            document.getElementById('data').innerHTML = '<br /><br /><br /><div class="pagination">' + pagestext + '</div>' + '<br /><br /><br />' + text;
         }
