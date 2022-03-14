@@ -6,17 +6,16 @@
   <title>Mon site</title>
   <meta name="description" content="A simple test">
   <meta name="author" content="Flammrock">
-  <link rel="icon" href="/favicon.ico">
-  <link rel="stylesheet" href="styles.css?v=1.0">
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <script>
-    var link = "https://github.com/Flammrock/flammrock.github.io/blob/master/statictest/liens.txt";
-
+    var link = "https://raw.githubusercontent.com/Flammrock/flammrock.github.io/master/statictest/liens.txt";
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-           console.log(xhttp.responseText;);
+           console.log(xhttp.responseText);
         }
     };
     xhttp.open("GET", link, true);
