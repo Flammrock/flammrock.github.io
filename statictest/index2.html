@@ -6,10 +6,16 @@
   <title>Mon site</title>
   <meta name="description" content="A simple test">
   <meta name="author" content="Flammrock">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
   <style>
+  @font-face {
+    font-family: 'Helvetica Neue';
+    src: local('Helvetica Neue Bold'), local('Helvetica-Neue-Bold'),
+        url('HelveticaNeueCyr-Bold.woff2') format('woff2'),
+        url('HelveticaNeueCyr-Bold.woff') format('woff'),
+        url('HelveticaNeueCyr-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+  }
     img {
       width: 70%;
       height: auto;
@@ -30,9 +36,9 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        width: calc(100% + 5px);
+        width: calc(100% + 7px);
         height: 0;
-        padding-bottom: calc(100% + 5px);
+        padding-bottom: calc(100% + 7px);
         border: 2px solid #000;
         border-radius: 50%;
         transform: translate(-50%,-50%);
@@ -41,7 +47,7 @@
         float: right;
     }
     .header {
-        font-family: 'Roboto', sans-serif;
+        font-family: "Helvetica Neue";
         font-size: 30px;
         font-weight: bold;
     }
@@ -84,7 +90,7 @@
   </style>
 </head>
 <body>
-    <a href="?v=1.0.5&page=0"><div class="header">CHRISTOPHE-LANDRY</div></a>
+    <a href="?v=1.0.6&page=0"><div class="header">CHRISTOPHE-LANDRY</div></a>
   <div id="data"></div>
   <script>
     var link = "https://raw.githubusercontent.com/Flammrock/flammrock.github.io/master/statictest/liens.txt?" + new Date().getTime();
@@ -158,11 +164,11 @@
            var pagestext = "";
            console.log(page);
            for (var i = 0; i < pages; i++) {
-               pagestext += '<a class="'+(i==page?"active":"")+'" style="margin:3px;" href="?v=1.0.5&page='+i+'">'+i+'</a>';
+               pagestext += '<a class="'+(i==page?"active":"")+'" style="margin:3px;" href="?v=1.0.6&page='+i+'">'+i+'</a>';
            }
            document.getElementById('data').innerHTML = '<br /><br /><br /><div class="pagination">' + pagestext + '</div>' + '<br /><br /><br />' + text;
         }
-    };//"<img src=\""+links[i].trim()+"\"><br />"
+    };
     xhttp.open("GET", link, true);
     xhttp.send();
   </script>
