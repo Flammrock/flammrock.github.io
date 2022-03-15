@@ -110,11 +110,14 @@
     }
     #lock {
         position: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         z-index: 1000;
         top: 0;
         left: 0;
         width: 100vw;
-        min-height: 100vh;
+        height: 100vh;
         background: rgba(0,0,0,0.9);
         opacity: 0;
         display: none;
@@ -122,13 +125,9 @@
         overflow-x: hidden;
         overflow-y: scroll;
     }
-    .preview {
-        position: relative;
-        float: inherit;
+    .view {
         width: 70vw;
         height: auto;
-        margin: 0;
-        padding: 0;
     }
   </style>
 </head>
@@ -148,7 +147,7 @@
 
     
     var locktimeout = null;
-    var lock = function(ele) {
+    var lock = function(ele,img) {
         if (locktimeout!=null) clearTimeout(locktimeout);
         locktimeout = null;
         document.getElementById("lock").innerHTML = "";
@@ -158,7 +157,7 @@
             locktimeout = null;
             document.getElementById("lock").style.opacity = "1";
             document.body.style.overflow = "hidden";
-            ele.onclick = function(e) {
+            img.onclick = function(e) {
                 e.preventDefault();
                 e.stopPropagation();
             };
@@ -178,22 +177,25 @@
         },500);
     };
     
-    var preview = function(html) {
-        var ele = document.createElement("div");
-        ele.innerHTML = html;
-        ele.style.cssText = "position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);";
-        lock(ele);
+    var view = function(url) {
+        var root = document.createElement("div");
+        root.style.cssText = "min-height:100vh;display: flex;align-items: center;justify-content: center;";
+        var ele = document.createElement("img");
+        ele.src = url;
+        ele.class = "view";
+        root.appendChild(ele);
+        lock(root,ele);
     };
     
     var gettype = function(url) {
         var mode = false;
         var id = null;
         var html = "";
-        var preview = false;
+        var original = false;
         
         var test = url.split(";");
         if (test.length>1) {
-            preview = test[0];
+            original = test[0];
             url = test[1];
         }
         
@@ -205,8 +207,8 @@
             mode = 2;
             id = url.match(google_image_regex)[1];
             html = "<img src=\"https://drive.google.com/uc?export=view&id="+id+"\"><br />";
-            if (preview) {
-                preview = "<img class=\"preview\" src=\"https://drive.google.com/uc?export=view&id="+preview.match(google_image_regex)[1]+"\">";
+            if (original) {
+                original = "https://drive.google.com/uc?export=view&id="+original.match(google_image_regex)[1];
             }
         } else if (pellicule_regex.test(url)) {
             mode = 3;
@@ -216,7 +218,7 @@
             mode: mode,
             id: id,
             html: html,
-            html_preview: preview
+            original: original
         };
     };
     
@@ -255,10 +257,10 @@
            for (var i = 0; i < datalinks[page].length; i++) {
                 var ele = document.createElement("div");
                 ele.innerHTML = datalinks[page][i].type.html;
-                if (datalinks[page][i].type.html_preview) {
+                if (datalinks[page][i].type.original) {
                     (function(data){
                         ele.onclick = function() {
-                            preview(data.type.html_preview);
+                            view(data.type.original);
                         };
                     })(datalinks[page][i]);
                 }
