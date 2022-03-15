@@ -19,19 +19,22 @@
     img {
        position: relative;
        float: right;
-      width: 70%;
+       clear:both;
+      width: 60%;
       height: auto;
-      margin-right: 5%;
+      margin-right: 10%;
       margin-bottom: 10px;
     }
     .iframe-container {
       position: relative;
       float: right;
-      width: 70%;
-      padding-bottom: 39.375%;
+      clear:both;
+      width: 60%;
+      padding-bottom: 33.75%;
       height: 0;
-       margin-right: 5%;
+       margin-right: 10%;
        margin-bottom: 10px;
+       display: block;
     }
     .iframe-container > iframe {
      position: absolute;
@@ -105,24 +108,94 @@
             margin-right: 200px;
         }
     }
+    #lock {
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        min-height: 100vh;
+        background: rgba(0,0,0,0.9);
+        opacity: 0;
+        display: none;
+        transition: opacity 0.5s ease;
+        overflow-x: hidden;
+        overflow-y: scroll;
+    }
+    .preview {
+        position: relative;
+        float: inherit;
+        width: 70vw;
+        height: auto;
+        margin: 0;
+        padding: 0;
+    }
   </style>
 </head>
 <body>
-    <a href="?v=1.0.9&page=0"><div class="header">CHRISTOPHE-LANDRY</div></a>
+    <div id="lock"></div>
+    <a href="?v=1.0.10&page=0"><div class="header">CHRISTOPHE-LANDRY</div></a>
   <div id="data"></div>
   <script>
     var link = "https://raw.githubusercontent.com/Flammrock/flammrock.github.io/master/statictest/liens.txt?" + new Date().getTime();
     var items_per_page = 10;
+    console.log(link);
     
     
     var youtube_regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     var google_image_regex = /^(?:(?:https?:)?\/\/)drive\.google\.com\/file\/d\/(.*)\/view\?usp=sharing$/;
     var pellicule_regex = /pellicule\:/;
+
+    
+    var locktimeout = null;
+    var lock = function(ele) {
+        if (locktimeout!=null) clearTimeout(locktimeout);
+        locktimeout = null;
+        document.getElementById("lock").innerHTML = "";
+        document.getElementById("lock").appendChild(ele);
+        document.getElementById("lock").style.display = "block";
+        locktimeout = setTimeout(function(){
+            locktimeout = null;
+            document.getElementById("lock").style.opacity = "1";
+            document.body.style.overflow = "hidden";
+            ele.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            };
+            document.getElementById("lock").onclick = function() {
+                unlock();
+            };
+        },100);
+    };
+    
+    var unlock = function() {
+        document.getElementById("lock").style.opacity = "0";
+        if (locktimeout!=null) clearTimeout(locktimeout);
+        locktimeout = setTimeout(function(){
+            locktimeout = null;
+            document.getElementById("lock").style.display = "none";
+            document.body.style.overflow = "auto";
+        },500);
+    };
+    
+    var preview = function(html) {
+        var ele = document.createElement("div");
+        ele.innerHTML = html;
+        ele.style.cssText = "position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);";
+        lock(ele);
+    };
     
     var gettype = function(url) {
         var mode = false;
         var id = null;
         var html = "";
+        var preview = false;
+        
+        var test = url.split(";");
+        if (test.length>1) {
+            preview = test[0];
+            url = test[1];
+        }
         
         if (youtube_regex.test(url)) {
             mode = 1;
@@ -132,6 +205,9 @@
             mode = 2;
             id = url.match(google_image_regex)[1];
             html = "<img src=\"https://drive.google.com/uc?export=view&id="+id+"\"><br />";
+            if (preview) {
+                preview = "<img class=\"preview\" src=\"https://drive.google.com/uc?export=view&id="+preview.match(google_image_regex)[1]+"\">";
+            }
         } else if (pellicule_regex.test(url)) {
             mode = 3;
         }
@@ -139,7 +215,8 @@
         return {
             mode: mode,
             id: id,
-            html: html
+            html: html,
+            html_preview: preview
         };
     };
     
@@ -150,7 +227,7 @@
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-           //console.log(xhttp.responseText);
+           console.log(xhttp.responseText);
            var links = xhttp.responseText.split('\n');
            var text = "";
            var datalinks = [[]];
@@ -174,14 +251,27 @@
            var pages = m3 + 1;
            if (page < 0) page = 0;
            if (page > m3) page = m3;
+           var root = document.createElement("div");
            for (var i = 0; i < datalinks[page].length; i++) {
-                text += datalinks[page][i].type.html;
+                var ele = document.createElement("div");
+                ele.innerHTML = datalinks[page][i].type.html;
+                if (datalinks[page][i].type.html_preview) {
+                    (function(data){
+                        ele.onclick = function() {
+                            preview(data.type.html_preview);
+                        };
+                    })(datalinks[page][i]);
+                }
+                root.appendChild(ele);
            }
            var pagestext = "";
            for (var i = 0; i < pages; i++) {
-               pagestext += '<a class="'+(i==page?"active":"")+'" style="margin:3px;" href="?v=1.0.9&page='+i+'">'+i+'</a>';
+               pagestext += '<a class="'+(i==page?"active":"")+'" style="margin:3px;" href="?v=1.0.10&page='+i+'">'+i+'</a>';
            }
-           document.getElementById('data').innerHTML = '<br /><br /><br /><div class="pagination">' + pagestext + '</div>' + '<br /><br /><br />' + text;
+           var header = document.createElement("div");
+           header.innerHTML = '<br /><br /><br /><div class="pagination">' + pagestext + '</div>' + '<br /><br /><br />';
+           document.getElementById('data').appendChild(header);
+           document.getElementById('data').appendChild(root);
         }
     };
     xhttp.open("GET", link, true);
