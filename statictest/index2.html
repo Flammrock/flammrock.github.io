@@ -23,7 +23,7 @@
                 src: url("HelveticaNeueItalic.woff2") format("woff2"), url("HelveticaNeueItalic.woff") format("woff"), url("HelveticaNeueItalic.ttf") format("truetype");
             }
 
-            img {
+            .img {
                 position: relative;
                 display: block;
                 float: right;
@@ -144,13 +144,15 @@
                 display: none;
                 transition: opacity 0.5s ease;
                 overflow-x: hidden;
-                overflow-y: scroll;
+                overflow-y: hidden;
             }
 
             .view {
-                height: 95vh!important;
                 float: inherit!important;
-                width: auto;
+                position: absolute;
+                top: 0; left: 0; right: 0; bottom: 0;
+                max-width: 95%;
+                max-height: 95%;
                 margin: auto;
             }
             
@@ -192,7 +194,7 @@
         <div id="lock"></div>
         <div id="page-container">
             <div id="content-wrap">
-            <a href="?v=1.0.12&page=0">
+            <a href="?v=1.0.13&page=0">
                 <div class="header">CHRISTOPHE-LANDRY</div>
             </a>
             <div id="data"></div>
@@ -243,7 +245,7 @@
             
             var view = function(url) {
                 var root = document.createElement("div");
-                root.style.cssText = "min-height:100vh;display: flex;align-items: center;justify-content: center;";
+                root.style.cssText = "display: flex;align-items: center;justify-content: center;width: 100%;height: 100%;position: fixed;top: 0;left: 0;";
                 var ele = document.createElement("img");
                 ele.src = url;
                 ele.className = "view";
@@ -271,7 +273,7 @@
                 } else if (google_image_regex.test(url)) {
                     mode = 2;
                     id = url.match(google_image_regex)[1];
-                    html = "<img src=\"https://drive.google.com/uc?export=view&id="+id+"\"><br />";
+                    html = "<img class=\"img\" src=\"https://drive.google.com/uc?export=view&id="+id+"\"><br />";
                     urlo = "https://drive.google.com/uc?export=view&id="+id;
                     if (original) {
                         original = "https://drive.google.com/uc?export=view&id="+original.match(google_image_regex)[1];
@@ -342,7 +344,7 @@
                    }
                    var pagestext = "";
                    for (var i = 0; i < pages; i++) {
-                       pagestext += '<a class="'+(i==page?"active":"")+'" style="margin:3px;" href="?v=1.0.12&page='+i+'">'+i+'</a>';
+                       pagestext += '<a class="'+(i==page?"active":"")+'" style="margin:3px;" href="?v=1.0.13&page='+i+'">'+i+'</a>';
                    }
                    var header = document.createElement("div");
                    header.innerHTML = '<br /><br /><br /><div class="pagination">' + pagestext + '</div>' + '<br /><br /><br />';
