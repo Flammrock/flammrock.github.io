@@ -9,6 +9,7 @@
             html, body {
                 padding: 0;
                 margin: 0;
+                overflow-x: hidden;
             }
         
             @font-face {
@@ -79,7 +80,35 @@
             }
 
             .pagination {
-                float: right;
+                display: inline-block;
+                text-align: right;
+            }
+            .pagination .one-digit {
+                margin: 3px 4px 3px 3px;
+            }
+            .pagination .hundred-case {
+                margin: 3px 2px 3px 3px;
+            }
+            .pagination a {
+                margin: 3px;
+            }
+            
+            .container-pagination {
+                display: none;
+            }
+            .container-pagination.active {
+                display: inline;
+            }
+            
+            .pagination-etc {
+                color: black;
+                font: 18px Helvetica;
+                font-weight: bold;
+                margin-left: 5px;
+                margin-right: 5px;
+            }
+            .pagination-etc:hover {
+                cursor: pointer;
             }
 
             .header {
@@ -194,7 +223,7 @@
         <div id="lock"></div>
         <div id="page-container">
             <div id="content-wrap">
-            <a href="?v=1.0.13&page=0">
+            <a href="?v=1.0.14&page=0">
                 <div class="header">CHRISTOPHE-LANDRY</div>
             </a>
             <div id="data"></div>
@@ -202,6 +231,7 @@
             <footer><span>© Christophe-Landry</span></footer>
          </div>
         <script>
+            //var link = "https://raw.githubusercontent.com/christophelandry/christophelandry.github.io/main/liens.txt?" + new Date().getTime();
             var link = "https://raw.githubusercontent.com/Flammrock/flammrock.github.io/master/statictest/liens.txt?" + new Date().getTime();
             var items_per_page = 10;
             console.log(link);
@@ -209,7 +239,7 @@
             
             var youtube_regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
             var google_image_regex = /^(?:(?:https?:)?\/\/)drive\.google\.com\/file\/d\/(.*)\/view\?usp=sharing$/;
-            var pellicule_regex = /pellicule\:/;
+            var pellicule_regex = /pellicule(?:\d+)?\:/;
             
             
             var locktimeout = null;
@@ -253,6 +283,12 @@
                 lock(root,ele);
             };
             
+            var pagination = function(ele) {
+                var container = ele.nextSibling;
+                container.className += ' active';
+                ele.style.display = 'none';
+            };
+            
             var gettype = function(url) {
                 var mode = false;
                 var id = null;
@@ -280,6 +316,10 @@
                     }
                 } else if (pellicule_regex.test(url)) {
                     mode = 3;
+                } else {
+                    mode = 2;
+                    html = "<img class=\"img\" src=\""+url+"\"><br />";
+                    urlo = url;
                 }
                 
                 return {
@@ -343,11 +383,20 @@
                         root.appendChild(ele);
                    }
                    var pagestext = "";
+                   var needend = 0;
+                   var containernext = "<span class=\"pagination-etc\" onclick=\"pagination(this);\">...</span><span class=\"container-pagination\">";
                    for (var i = 0; i < pages; i++) {
-                       pagestext += '<a class="'+(i==page?"active":"")+'" style="margin:3px;" href="?v=1.0.13&page='+i+'">'+i+'</a>';
+                       if (i > 9 && i==23 && i <= 100) {pagestext += containernext;needend++;}
+                       if (i>23 && (i-1)%21==1 && i <= 100) {pagestext += containernext;needend++;}
+                       pagestext += '<a class="'+(i==page?"active":"")+(i<=9?' one-digit':(i>=94&&i<=100)?'hundred-case':'')+'" href="?v=1.0.14&page='+i+'">'+i+'</a>';
+                       if (i==9) pagestext += '<br />';
+                       if (i>9 && i%7==2 && i <= 100) pagestext += '<br />';
+                       if (i>9 && i%5==0 && i > 100) pagestext += '<br />';
                    }
+                   while (needend--) pagestext += "</span>";
                    var header = document.createElement("div");
-                   header.innerHTML = '<br /><br /><br /><div class="pagination">' + pagestext + '</div>' + '<br /><br /><br />';
+                   header.style.cssText = 'margin-bottom: 50px;float: right;';
+                   header.innerHTML = '<br /><br /><br /><div class="pagination">' + pagestext + '</div>' + '<br />';
                    document.getElementById('data').appendChild(header);
                    document.getElementById('data').appendChild(root);
                 }
