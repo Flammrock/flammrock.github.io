@@ -242,7 +242,7 @@
         <div id="lock"></div>
         <div id="page-container">
             <div id="content-wrap">
-            <a href="?v=1.0.17&page=0">
+            <a href="?v=1.0.18&page=0">
                 <div class="header">CHRISTOPHE-LANDRY</div>
             </a>
             <div id="data"></div>
@@ -256,8 +256,11 @@
             //console.log(link);
             
             
+            
+            
+            var dropbox_regex = /(?:(?:https?:)?\/\/)www\.dropbox\.com\/s\/(.*)\?dl=0/;
             var youtube_regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-            var google_image_regex = /^(?:(?:https?:)?\/\/)drive\.google\.com\/file\/d\/(.*)\/view\?usp=sharing$/;
+            var google_drive_regex = /^(?:(?:https?:)?\/\/)drive\.google\.com\/file\/d\/(.*)\/view\?usp=sharing$/;
             var pellicule_regex = /pellicule(?:\d+)?\:/;
             
             
@@ -313,7 +316,7 @@
                 var pagebuild = function(from,to,breakline,resize) {
                     var pagestext = "";
                     for (var i = from; i <= to && i <= maxpages; i++) {
-                        pagestext += '<a class="'+(resize?'digit-resize ':'')+''+((!noselect&&i==page||i==rpage)?"active":"")+(i<=9?' one-digit':(i<=99?' two-digit':' three-digit'))+'" href="?v=1.0.17&page='+i+'">'+i+'</a>';
+                        pagestext += '<a class="'+(resize?'digit-resize ':'')+''+((!noselect&&i==page||i==rpage)?"active":"")+(i<=9?' one-digit':(i<=99?' two-digit':' three-digit'))+'" href="?v=1.0.18&page='+i+'">'+i+'</a>';
                     }
                     return pagestext + (breakline?'<br />':'');
                 };
@@ -351,13 +354,21 @@
                     mode = 1;
                     id = url.match(youtube_regex)[1];
                     html = '<div class="iframe-container"><iframe src="https://www.youtube.com/embed/'+id+'" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><br />';
-                } else if (google_image_regex.test(url)) {
+                } else if (dropbox_regex.test(url)) {
                     mode = 2;
-                    id = url.match(google_image_regex)[1];
+                    id = url.match(dropbox_regex)[1];
+                    html = "<img class=\"img\" src=\"https://dl.dropboxusercontent.com/s/"+id+"\"><br />";
+                    urlo = "https://dl.dropboxusercontent.com/s/"+id;
+                    if (original) {
+                        original = "https://dl.dropboxusercontent.com/s/"+original.match(dropbox_regex)[1];
+                    }
+                } else if (google_drive_regex.test(url)) {
+                    mode = 2;
+                    id = url.match(google_drive_regex)[1];
                     html = "<img class=\"img\" src=\"https://drive.google.com/uc?export=view&id="+id+"\"><br />";
                     urlo = "https://drive.google.com/uc?export=view&id="+id;
                     if (original) {
-                        original = "https://drive.google.com/uc?export=view&id="+original.match(google_image_regex)[1];
+                        original = "https://drive.google.com/uc?export=view&id="+original.match(google_drive_regex)[1];
                     }
                 } else if (pellicule_regex.test(url)) {
                     mode = 3;
