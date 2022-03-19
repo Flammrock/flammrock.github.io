@@ -78,6 +78,10 @@
                 border-radius: 50%;
                 transform: translate(-50%, -50%);
             }
+            a.two-digit::after {
+                width: 22px;
+                height: 22px;
+            }
 
             .pagination {
                 display: inline-block;
@@ -216,6 +220,16 @@
                 transform: translateY(-50%);
                 text-align: center;
             }
+            
+            .noselect {
+              -webkit-touch-callout: none; /* iOS Safari */
+                -webkit-user-select: none; /* Safari */
+                 -khtml-user-select: none; /* Konqueror HTML */
+                   -moz-user-select: none; /* Old versions of Firefox */
+                    -ms-user-select: none; /* Internet Explorer/Edge */
+                        user-select: none; /* Non-prefixed version, currently
+                                              supported by Chrome, Edge, Opera and Firefox */
+            }
 
         </style>
     </head>
@@ -223,7 +237,7 @@
         <div id="lock"></div>
         <div id="page-container">
             <div id="content-wrap">
-            <a href="?v=1.0.14&page=0">
+            <a href="?v=1.0.15&page=0">
                 <div class="header">CHRISTOPHE-LANDRY</div>
             </a>
             <div id="data"></div>
@@ -283,10 +297,34 @@
                 lock(root,ele);
             };
             
-            var pagination = function(ele) {
-                var container = ele.nextSibling;
-                container.className += ' active';
-                ele.style.display = 'none';
+            var pagination = function(ele,rpage,page,maxpages) {
+                document.getElementById('pagination').innerHTML = pagebuilder(rpage,page,maxpages,true);
+            };
+            
+            var pagebuilder = function(rpage,page,maxpages,noselect) {
+            
+                var pagebuild = function(from,to,breakline) {
+                    var pagestext = "";
+                    for (var i = from; i <= to && i <= maxpages; i++) {
+                        pagestext += '<a class="'+((!noselect&&i==page||i==rpage)?"active":"")+(i<=9?' one-digit':' two-digit')+'" href="?v=1.0.15&page='+i+'">'+i+'</a>';
+                    }
+                    return pagestext + (breakline?'<br />':'');
+                };
+                
+                var pagebuildnext = function(rpage,page,maxpages) {
+                    if (page < 0) return "";
+                    if (page > maxpages) return "";
+                    return "<span class=\"pagination-etc\" onclick=\"pagination(this,"+rpage+","+page+","+maxpages+");\">...</span>";
+                };
+            
+                
+            
+                if (page < 23) {
+                    return pagebuild(0,9,true) + pagebuild(10,16,true) + pagebuild(17,22,false) + pagebuildnext(rpage,23,maxpages);
+                } else {
+                    var pageslimit = Math.ceil((page-3)/19)*19+4;
+                    return pagebuildnext(rpage,pageslimit-20,maxpages) + pagebuild(pageslimit-19,pageslimit-19+6-1,true) + pagebuild(pageslimit-19+6,pageslimit-19+6*2,true) + pagebuild(pageslimit-19+6*2+1,pageslimit-1,false) + pagebuildnext(rpage,pageslimit,maxpages);
+                }
             };
             
             var gettype = function(url) {
@@ -382,21 +420,10 @@
                         }
                         root.appendChild(ele);
                    }
-                   var pagestext = "";
-                   var needend = 0;
-                   var containernext = "<span class=\"pagination-etc\" onclick=\"pagination(this);\">...</span><span class=\"container-pagination\">";
-                   for (var i = 0; i < pages; i++) {
-                       if (i > 9 && i==23 && i <= 100) {pagestext += containernext;needend++;}
-                       if (i>23 && (i-1)%21==1 && i <= 100) {pagestext += containernext;needend++;}
-                       pagestext += '<a class="'+(i==page?"active":"")+(i<=9?' one-digit':(i>=94&&i<=100)?'hundred-case':'')+'" href="?v=1.0.14&page='+i+'">'+i+'</a>';
-                       if (i==9) pagestext += '<br />';
-                       if (i>9 && i%7==2 && i <= 100) pagestext += '<br />';
-                       if (i>9 && i%5==0 && i > 100) pagestext += '<br />';
-                   }
-                   while (needend--) pagestext += "</span>";
+                   var pagestext = pagebuilder(page,page,m3);
                    var header = document.createElement("div");
                    header.style.cssText = 'margin-bottom: 50px;float: right;';
-                   header.innerHTML = '<br /><br /><br /><div class="pagination">' + pagestext + '</div>' + '<br />';
+                   header.innerHTML = '<br /><br /><br /><div id="pagination" class="pagination noselect">' + pagestext + '</div>' + '<br />';
                    document.getElementById('data').appendChild(header);
                    document.getElementById('data').appendChild(root);
                 }
