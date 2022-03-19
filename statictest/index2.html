@@ -96,6 +96,11 @@
             .pagination a {
                 margin: 3px;
             }
+            .pagination .three-digit::after {
+                border-radius: 5px!important;
+                width: 100%!important;
+                height: 100%!important;
+            }
             
             .container-pagination {
                 display: none;
@@ -237,7 +242,7 @@
         <div id="lock"></div>
         <div id="page-container">
             <div id="content-wrap">
-            <a href="?v=1.0.15&page=0">
+            <a href="?v=1.0.17&page=0">
                 <div class="header">CHRISTOPHE-LANDRY</div>
             </a>
             <div id="data"></div>
@@ -248,7 +253,7 @@
             //var link = "https://raw.githubusercontent.com/christophelandry/christophelandry.github.io/main/liens.txt?" + new Date().getTime();
             var link = "https://raw.githubusercontent.com/Flammrock/flammrock.github.io/master/statictest/liens.txt?" + new Date().getTime();
             var items_per_page = 10;
-            console.log(link);
+            //console.log(link);
             
             
             var youtube_regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
@@ -308,7 +313,7 @@
                 var pagebuild = function(from,to,breakline,resize) {
                     var pagestext = "";
                     for (var i = from; i <= to && i <= maxpages; i++) {
-                        pagestext += '<a class="'+(resize?'digit-resize':'')+''+((!noselect&&i==page||i==rpage)?"active":"")+(i<=9?' one-digit':' two-digit')+'" href="?v=1.0.15&page='+i+'">'+i+'</a>';
+                        pagestext += '<a class="'+(resize?'digit-resize ':'')+''+((!noselect&&i==page||i==rpage)?"active":"")+(i<=9?' one-digit':(i<=99?' two-digit':' three-digit'))+'" href="?v=1.0.17&page='+i+'">'+i+'</a>';
                     }
                     return pagestext + (breakline?'<br />':'');
                 };
