@@ -90,8 +90,8 @@
             .pagination .one-digit {
                 margin: 3px 4px 3px 3px;
             }
-            .pagination .hundred-case {
-                margin: 3px 2px 3px 3px;
+            .pagination .digit-resize {
+                margin: 3px 1px 3px 3px!important;
             }
             .pagination a {
                 margin: 3px;
@@ -177,7 +177,7 @@
                 display: none;
                 transition: opacity 0.5s ease;
                 overflow-x: hidden;
-                overflow-y: hidden;
+                overflow-y: scroll;
             }
 
             .view {
@@ -267,6 +267,7 @@
                     locktimeout = null;
                     document.getElementById("lock").style.opacity = "1";
                     document.body.style.overflow = "hidden";
+                    document.documentElement.style.overflow = "hidden";
                     img.onclick = function(e) {
                         e.preventDefault();
                         e.stopPropagation();
@@ -284,6 +285,7 @@
                     locktimeout = null;
                     document.getElementById("lock").style.display = "none";
                     document.body.style.overflow = "auto";
+                    document.documentElement.style.overflow = "auto";
                 },500);
             };
             
@@ -303,10 +305,10 @@
             
             var pagebuilder = function(rpage,page,maxpages,noselect) {
             
-                var pagebuild = function(from,to,breakline) {
+                var pagebuild = function(from,to,breakline,resize) {
                     var pagestext = "";
                     for (var i = from; i <= to && i <= maxpages; i++) {
-                        pagestext += '<a class="'+((!noselect&&i==page||i==rpage)?"active":"")+(i<=9?' one-digit':' two-digit')+'" href="?v=1.0.15&page='+i+'">'+i+'</a>';
+                        pagestext += '<a class="'+(resize?'digit-resize':'')+''+((!noselect&&i==page||i==rpage)?"active":"")+(i<=9?' one-digit':' two-digit')+'" href="?v=1.0.15&page='+i+'">'+i+'</a>';
                     }
                     return pagestext + (breakline?'<br />':'');
                 };
@@ -323,7 +325,7 @@
                     return pagebuild(0,9,true) + pagebuild(10,16,true) + pagebuild(17,22,false) + pagebuildnext(rpage,23,maxpages);
                 } else {
                     var pageslimit = Math.ceil((page-3)/19)*19+4;
-                    return pagebuildnext(rpage,pageslimit-20,maxpages) + pagebuild(pageslimit-19,pageslimit-19+6-1,true) + pagebuild(pageslimit-19+6,pageslimit-19+6*2,true) + pagebuild(pageslimit-19+6*2+1,pageslimit-1,false) + pagebuildnext(rpage,pageslimit,maxpages);
+                    return pagebuildnext(rpage,pageslimit-20,maxpages) + pagebuild(pageslimit-19,pageslimit-19+6-1,true) + pagebuild(pageslimit-19+6,pageslimit-19+6*2,true,pageslimit-20 > 80) + pagebuild(pageslimit-19+6*2+1,pageslimit-1,false) + pagebuildnext(rpage,pageslimit,maxpages);
                 }
             };
             
