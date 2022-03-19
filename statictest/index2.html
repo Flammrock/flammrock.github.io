@@ -242,7 +242,7 @@
         <div id="lock"></div>
         <div id="page-container">
             <div id="content-wrap">
-            <a href="?v=1.0.18&page=0">
+            <a href="?v=1.0.19&page=0">
                 <div class="header">CHRISTOPHE-LANDRY</div>
             </a>
             <div id="data"></div>
@@ -316,7 +316,7 @@
                 var pagebuild = function(from,to,breakline,resize) {
                     var pagestext = "";
                     for (var i = from; i <= to && i <= maxpages; i++) {
-                        pagestext += '<a class="'+(resize?'digit-resize ':'')+''+((!noselect&&i==page||i==rpage)?"active":"")+(i<=9?' one-digit':(i<=99?' two-digit':' three-digit'))+'" href="?v=1.0.18&page='+i+'">'+i+'</a>';
+                        pagestext += '<a class="'+(resize?'digit-resize ':'')+''+((!noselect&&i==page||i==rpage)?"active":"")+(i<=9?' one-digit':(i<=99?' two-digit':' three-digit'))+'" href="?v=1.0.19&page='+i+'">'+i+'</a>';
                     }
                     return pagestext + (breakline?'<br />':'');
                 };
@@ -423,18 +423,20 @@
                         var ele = document.createElement("div");
                         ele.className = 'img-container';
                         ele.innerHTML = datalinks[page][i].type.html;
-                        if (datalinks[page][i].type.original) {
-                            (function(data){
-                                ele.onclick = function() {
-                                    view(data.type.original);
-                                };
-                            })(datalinks[page][i]);
-                        } else {
-                            (function(data){
-                                ele.onclick = function() {
-                                    view(data.type.url);
-                                };
-                            })(datalinks[page][i]);
+                        if (datalinks[page][i].type.mode==2) {
+                            if (datalinks[page][i].type.original) {
+                                (function(data){
+                                    ele.onclick = function() {
+                                        view(data.type.original);
+                                    };
+                                })(datalinks[page][i]);
+                            } else {
+                                (function(data){
+                                    ele.onclick = function() {
+                                        view(data.type.url);
+                                    };
+                                })(datalinks[page][i]);
+                            }
                         }
                         root.appendChild(ele);
                    }
