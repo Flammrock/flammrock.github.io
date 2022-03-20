@@ -218,12 +218,13 @@
             
             footer > span {
                 position: absolute;
+                left: 0;
                 top: 50%;
-                width: 100%;
-                font: 14px "Helvetica Neue Italic";
+                width: 90%;
+                font: 10px "Helvetica Neue Italic";
                 color: #777;
                 transform: translateY(-50%);
-                text-align: center;
+                text-align: right;
             }
             
             .noselect {
@@ -242,7 +243,7 @@
         <div id="lock"></div>
         <div id="page-container">
             <div id="content-wrap">
-            <a href="?v=1.0.19&page=0">
+            <a href="?v=1.0.20&page=0">
                 <div class="header">CHRISTOPHE-LANDRY</div>
             </a>
             <div id="data"></div>
@@ -316,7 +317,7 @@
                 var pagebuild = function(from,to,breakline,resize) {
                     var pagestext = "";
                     for (var i = from; i <= to && i <= maxpages; i++) {
-                        pagestext += '<a class="'+(resize?'digit-resize ':'')+''+((!noselect&&i==page||i==rpage)?"active":"")+(i<=9?' one-digit':(i<=99?' two-digit':' three-digit'))+'" href="?v=1.0.19&page='+i+'">'+i+'</a>';
+                        pagestext += '<a class="'+(resize?'digit-resize ':'')+''+((!noselect&&i==page||i==rpage)?"active":"")+(i<=9?' one-digit':(i<=99?' two-digit':' three-digit'))+'" href="?v=1.0.20&page='+i+'">'+i+'</a>';
                     }
                     return pagestext + (breakline?'<br />':'');
                 };
@@ -329,11 +330,11 @@
             
                 
             
-                if (page < 23) {
-                    return pagebuild(0,9,true) + pagebuild(10,16,true) + pagebuild(17,22,false) + pagebuildnext(rpage,23,maxpages);
+                if (page < 16) {
+                    return pagebuild(0,9,true) + pagebuild(10,15) + pagebuildnext(rpage,16,maxpages);
                 } else {
-                    var pageslimit = Math.ceil((page-3)/19)*19+4;
-                    return pagebuildnext(rpage,pageslimit-20,maxpages) + pagebuild(pageslimit-19,pageslimit-19+6-1,true) + pagebuild(pageslimit-19+6,pageslimit-19+6*2,true,pageslimit-20 > 80) + pagebuild(pageslimit-19+6*2+1,pageslimit-1,false) + pagebuildnext(rpage,pageslimit,maxpages);
+                    var pageslimit = Math.ceil((page-3)/12)*12+4;
+                    return pagebuildnext(rpage,pageslimit-13,maxpages) + pagebuild(pageslimit-12,pageslimit-12+6-1,true) + pagebuild(pageslimit-12+6,pageslimit-12+6*2-1,false) + pagebuildnext(rpage,pageslimit,maxpages);
                 }
             };
             
