@@ -25,33 +25,40 @@
         <script>
             
             var data = `
-Plat : Nom, Provenance
-Catégorie Resto :
-Personne :
-Map : Emplacement
-Cuisinier :
-SIRET : Nom, Horaires, Adresse, Type/origine, Place disponible, Carte
+Est associer , 0N> Réservation, 11< Expérience réalisée
+Expérience réalisée : _Commentaire, UID, _RID, _EID Note, Heure réaliser, Date réaliser
+Dirige1 , 1N< Patron, 1N> Restaurant
+Catégorie Resto : Tags
+se caractérise1 , 0N> Catégorie Resto , 0N< Restaurant
+Table : Id_table, Nb de place, Restaurant
 
-contient , 11 Menu (carte),1N> Plat
+Réservation : RID, _Id_table, _SIRET restaurent,heure de réservation, nombre de client
+Vie,11< Client,0N> Expérience réalisée
 Patron :
-Est un1 , XX Salariés , XX Client , XX Patron , XX> Personne
-Salariés : Nom, Numéro de sécu, Nom du restaurants
-Est un2 , XX Cuisinier , XX Serveur , XX Voiturier , XX> Salariés
-Voiturier :
+Dirige2 , 1N< Patron, 1N> Salariés
+Restaurant : Siret, Nom, Horaire, Adresse, Type/origine, Place disponible, Carte, H-ouverture, H-fermeture, Localisation
+Se place, 0N< Table , 11> Restaurant
 
-Menu (carte) : Restaurant, Créneaux
-Dirige , 1N Patron, 1N> Restautant
-Client : Id, Nom, Prénom, Sexe, Age, Crédit, Location, Experience, xp
-Application :
-Serveur :
-Commentaire : Restaurant, Client, Commentaire, Note
+Fait , 0N> Réservation , 0N< Client
+Client : _Crédit, Location, Expérience, xp
+Est un2 , XX< Salariés , XX< Client , XX< Patron , XX> Utilisateur
+Salariés : _Numéro de sécu, N Siret Restaurant
+Travail dans, 0N< Salariés , 0N> Restaurant
+Possede1 , 11< Restaurant , 0N> Menu (carte)
 
-Possede , 11 Restautant , 0N> Menu (carte)
-Restautant : Siret, Nom, Horaire, Adresse, Type/origine, Place disponible, Carte
-Vie,11 Client,0N> Experience
-Experience : Nom client, Nom restaurant, Date
-Table : Nb de place, Id_table, Restaurant
-Disponibilité : Restaurant, h-ouverture, h-fermeture
+Commande réalisé : heure de service
+fait, 1N> Commande , 1N< Client
+Utilisateur: UID, Nom, Prénom, Sexe, Age, Mail, Mot de passe
+Plat : PID, _MID , Nom, Prix, Provenance, halal, végétarien
+contient , 11< Menu (carte),1N> Plat
+Menu (carte) : MID , _SIRET Restaurant, _PID , Créneaux
+
+Commande prévue : heure de service
+Hérite2, XX> Commande réalisé  , XX> Commande prévue , XX< Commande
+Commande : EID , _RID, heure de commande, Date
+Contient, 0N> Plat , 11< Commande
+se caractérise2 , 0N> Catégorie plat , 0N< Plat
+Catégorie plat : Tags
             `;
             
             document.getElementById('mcd').value = data;
@@ -164,6 +171,43 @@ Disponibilité : Restaurant, h-ouverture, h-fermeture
                 return true;
             };
             
+            let TypeBuilder = class TypeBuilder {
+            
+                constructor(reg) {
+                    this.s = null;
+                    if (typeof reg === 'string') {
+                        this.s = reg;
+                    }
+                    this.reg = reg;
+                }
+                
+                test(v) {
+                    if (this.s!=null) return this.s==v;
+                    return this.reg.test(v);
+                }
+                
+            
+            };
+            
+            let TYPE = [
+                new TypeBuilder('integer'),
+                new TypeBuilder('serial'),
+                new TypeBuilder('bigint'),
+                new TypeBuilder('bigserial'),
+                new TypeBuilder('date'),
+                new TypeBuilder('time'),
+                new TypeBuilder('datetime'),
+                new TypeBuilder('text'),
+                new TypeBuilder(/varchar\(\d+\)/)
+            ];
+            
+            let istype = (type) => {
+                for (var i = 0; i < TYPE.length; i++) {
+                    if (TYPE[i].test(type)) return true;
+                }
+                return false;
+            };
+            
             let SQL = {
             
                 Table: class Table {
@@ -172,6 +216,7 @@ Disponibilité : Restaurant, h-ouverture, h-fermeture
                         this.name = typeof tokens !== 'undefined' ? tokens[0] : null;
                         this.properties = [];
                         this.foreigntable = [];
+                        this.foreigntableAlter = [];
                         if (typeof tokens !== 'undefined') {
                             for (var i = 1; i < tokens.length; i++) {
                                 if (tokens[i]==','||tokens[i]==':'||tokens[i]=='') continue;
@@ -184,11 +229,23 @@ Disponibilité : Restaurant, h-ouverture, h-fermeture
                         this.foreigntable.push(table);
                     }
                     
+                    addForeignAlter(table) {
+                        this.foreigntableAlter.push(table);
+                    }
+                    
                     buildProperties() {
                         let p = '';
                         let len = this.properties.length;
+                        let propparse = (prop) => {
+                            let index = prop.lastIndexOf(' ');
+                            let type = prop.substring(index+1).trim();
+                            if (istype(type)) {
+                                return prop;
+                            }
+                            return prop + ' text';
+                        };
                         for (var i = 0; i < len; i++) {
-                            p += '\t'+this.properties[i] + ' text' + (i==len-1?'':',\n');
+                            p += '\t' + propparse(this.properties[i]) + (i==len-1?'':',\n');
                         }
                         return p;
                     }
@@ -197,12 +254,25 @@ Disponibilité : Restaurant, h-ouverture, h-fermeture
                         let f = '';
                         let ff = '';
                         let len = this.foreigntable.length;
+                        let len2 = this.foreigntableAlter.length;
                         for (var i = 0; i < len; i++) {
                             let t = this.foreigntable[i];
                             ff += '\t'+t.name+'_id integer,\n';
                             f += '\t'+'CONSTRAINT fk_'+t.name+' FOREIGN KEY('+t.name+'_id) REFERENCES '+t.name+'(id)' + (i==len-1?'':',\n');
                         }
-                        return ff+f;
+                        let fff = '';
+                        for (var i = 0; i < len2; i++) {
+                            let t = this.foreigntableAlter[i];
+                            fff += '\t'+t.name+'_id integer' + (i==len2-1?'':',\n');
+                        }
+                        return fff+(fff!=''&&ff!=''?',\n':'')+ff+f;
+                    }
+                    
+                    dependOn(table) {
+                        for (var i = 0; i < this.foreigntable.length; i++) {
+                            if (this.foreigntable[i]==table) return true;
+                        }
+                        return false;
                     }
                     
                     toString() {
@@ -214,9 +284,16 @@ Disponibilité : Restaurant, h-ouverture, h-fermeture
                             ${'\t'}id serial PRIMARY KEY${p==''&&f==''?'':p==''?',\n'+f:f==''?',\n'+p:',\n'+p+',\n'+f}
                         );
                         `.split('\n'),(s) => s.replace(/^[ ]+|[ ]+$/g, '')).join('\n');
-                        //console.warn(t);
                         return t;
+                    }
                     
+                    getAlter() {
+                        let t = '';
+                        for (var i = 0; i < this.foreigntableAlter.length; i++) {
+                            let f = this.foreigntableAlter[i];
+                            t += 'ALTER TABLE '+this.name+' ADD CONSTRAINT fk_'+f.name+' FOREIGN KEY('+f.name+'_id) REFERENCES '+f.name+'(id);';
+                        }
+                        return t;
                     }
                     
                 },
@@ -347,8 +424,8 @@ Disponibilité : Restaurant, h-ouverture, h-fermeture
                     } else if (mode==MODE._11) {
                         let t1 = dictget(hashtables,ass1.name);
                         let t2 = dictget(hashtables,ass2.name);
-                        t1.addForeign(t2);
-                        t2.addForeign(t1);
+                        t1.addForeignAlter(t2);
+                        t2.addForeignAlter(t1);
                     } else if (mode==MODE._1N) {
                         let t1 = dictget(hashtables,ass1.name);
                         let t2 = dictget(hashtables,ass2.name);
@@ -384,7 +461,45 @@ Disponibilité : Restaurant, h-ouverture, h-fermeture
                     
                 });
                 
-                return tables;
+                // solve inheritances
+                iterate(inheritances,(h) => {
+                    let p = dictget(hashtables,h.parent);
+                    iterate(h.children,(c) => {
+                        let t = dictget(hashtables,c);
+                        t.addForeign(p);
+                    });
+                });
+                
+                let tablessorted = [];
+                let added = {};
+                
+                while (true) {
+                    let g = false;
+                    iterate(tables,(t) => {
+                        if (t.foreigntable.length==0) {
+                            if (!dictexists(added,t.name)) {
+                                added[t.name] = true;
+                                tablessorted.push(t);
+                                g = true;
+                            }
+                        } else {
+                            let v = 0;
+                            iterate(t.foreigntable,(tt) => {
+                                if (dictexists(added,tt.name)) v++;
+                            });
+                            if (v==t.foreigntable.length) {
+                                if (!dictexists(added,t.name)) {
+                                    added[t.name] = true;
+                                    tablessorted.push(t);
+                                    g = true;
+                                }
+                            }
+                        }
+                    });
+                    if (!g) break;
+                }
+                
+                return tablessorted;
             
             };
             
@@ -392,6 +507,9 @@ Disponibilité : Restaurant, h-ouverture, h-fermeture
                 let txt = '';
                 iterate(sqlcompiled, (t) => {
                     txt += t.toString() + '\n\n';
+                });
+                iterate(sqlcompiled, (t) => {
+                    txt += t.getAlter() + '\n';
                 });
                 return txt;
             };
@@ -421,7 +539,10 @@ Disponibilité : Restaurant, h-ouverture, h-fermeture
             document.getElementById('compile').onclick = (e) => {
                 let v = document.getElementById('mcd').value;
                 document.getElementById('sql').value = display(mtd2sql(v));
-            }; 
+            };
+            
+            let v = document.getElementById('mcd').value;
+            document.getElementById('sql').value = display(mtd2sql(v));
             
         </script>
     </body>
