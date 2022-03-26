@@ -257,13 +257,13 @@ Catégorie plat : Tags
                         let len2 = this.foreigntableAlter.length;
                         for (var i = 0; i < len; i++) {
                             let t = this.foreigntable[i];
-                            ff += '\t'+t.name+'_id integer,\n';
-                            f += '\t'+'CONSTRAINT fk_'+t.name+' FOREIGN KEY('+t.name+'_id) REFERENCES '+t.name+'(id)' + (i==len-1?'':',\n');
+                            ff += '\t'+t.name.toLowerCase()+'_id integer,\n';
+                            f += '\t'+'CONSTRAINT fk_'+t.name.toLowerCase()+' FOREIGN KEY('+t.name.toLowerCase()+'_id) REFERENCES '+t.name+'(id)' + (i==len-1?'':',\n');
                         }
                         let fff = '';
                         for (var i = 0; i < len2; i++) {
                             let t = this.foreigntableAlter[i];
-                            fff += '\t'+t.name+'_id integer' + (i==len2-1?'':',\n');
+                            fff += '\t'+t.name.toLowerCase()+'_id integer' + (i==len2-1?'':',\n');
                         }
                         return fff+(fff!=''&&ff!=''?',\n':'')+ff+f;
                     }
@@ -291,7 +291,7 @@ Catégorie plat : Tags
                         let t = '';
                         for (var i = 0; i < this.foreigntableAlter.length; i++) {
                             let f = this.foreigntableAlter[i];
-                            t += 'ALTER TABLE '+this.name+' ADD CONSTRAINT fk_'+f.name+' FOREIGN KEY('+f.name+'_id) REFERENCES '+f.name+'(id);';
+                            t += 'ALTER TABLE '+this.name+' ADD CONSTRAINT fk_'+f.name.toLowerCase()+' FOREIGN KEY('+f.name.toLowerCase()+'_id) REFERENCES '+f.name+'(id);';
                         }
                         return t;
                     }
