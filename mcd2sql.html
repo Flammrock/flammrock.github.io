@@ -429,13 +429,13 @@ Catégorie plat : Tags
                     } else if (mode==MODE._1N) {
                         let t1 = dictget(hashtables,ass1.name);
                         let t2 = dictget(hashtables,ass2.name);
-                        t1.addForeign(t2);
-                        //t2.addForeign(t1);
+                        //t1.addForeign(t2);
+                        t2.addForeign(t1);
                     } else if (mode==MODE._N1) {
                         let t1 = dictget(hashtables,ass1.name);
                         let t2 = dictget(hashtables,ass2.name);
-                        //t1.addForeign(t2);
-                        t2.addForeign(t1);
+                        t1.addForeign(t2);
+                        //t2.addForeign(t1);
                     }
                 
                     return null;
