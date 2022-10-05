@@ -1,0 +1,262 @@
+(*node n1(x: float) returns (y: float)
+let
+	y = x *. x +. 1.0;
+tel
+
+node n3(x: int) returns (y: int)
+var aux: int;
+let
+	aux= 0 -> pre x;
+	y = x + aux;
+tel
+
+node n4() returns (y: int)
+let
+	y = 0 -> (pre y) + 1; 
+tel
+
+node n5() returns (y: int)
+let
+	y = 0 fby (1 -> (y + pre y));
+tel
+
+*)
+
+node somme(x: int) returns (o: int)
+let
+	o = x + 0 fby o;
+tel
+
+node alarme_bornes(x,lo,hi: int) returns (alarme: bool)
+var c: bool;
+let
+	c = x < lo or x > hi;
+	alarme = merge c (false when c) (true whenot c);
+tel
+
+node vitesse_temp(x: float) returns(y: float)
+var y0: float;
+let
+	y0 = 0.0;
+	y = x -. ((0.0 -. y0 +. x) -> pre x);
+tel
+
+
+node alarme_vit(x: float) returns (alarme: bool)
+var y0: float;
+	lo: float;
+	hi: float;
+	y: float;
+let
+	y0 = 0.0;
+	lo = -.2.0;
+	hi = 2.0;
+	y = vitesse_temp(x);
+	alarme = y <. lo or y >. hi;
+tel
+
+node jafter(x: bool) returns(y: bool)
+let
+	y = false -> pre x;
+tel
+
+node min_flot(x: int) returns (y: int)
+var aux: int;
+let
+	aux = x fby y;
+	if x < aux
+		then y = x
+		else y = aux
+	end;
+tel
+
+node compteur_evt(e: bool) returns (c: int)
+let
+	c = merge e ((1 fby (c+1)) when e) (0 whenot e);
+tel
+
+node switch2(orig,con,coff: bool) returns (statev: bool)
+var lastStatev: bool;
+let
+	lastStatev = orig fby statev;
+	statev =  if lastStatev and coff then false else (
+		if not lastStatev and con then true else lastStatev
+	);
+tel
+
+
+node hadd(x,y: bool) returns (cout,s: bool)
+let
+	s = (x and not y) or (not x and y);
+	cout = x and y;
+tel
+
+node fadd(cin,x,y: bool) returns (cout,s: bool)
+var aux: bool;
+let
+	aux = (x and not y) or (not x and y);
+	s = (aux and not cin) or (not aux and cin);
+	cout = (x and y) or (x and cin) or (y and cin);
+tel
+
+
+node sadd(x,y: bool) returns (s: bool)
+var cout: bool;
+let
+	(cout,s) = fadd(false fby cout,x,y);
+tel
+
+node alarme_vit_val(x: float) returns (alarme: bool)
+var cnt: int;
+	c: bool;
+	alarme_aux: bool;
+let
+	cnt = compteur_evt(alarme_vit(x));
+	
+	c = cnt >= 3;
+	alarme_aux = x <. -.10.0 or x >. 35.0;
+	
+	alarme = merge c (alarme_aux when c) (false whenot c);
+tel
+
+node compteur_evt_2(e: bool) returns (c: int)
+let
+	reset
+		c = somme((merge e (1 when e) (0 whenot e)));
+	every (not e);
+tel
+
+
+
+
+
+
+(* BAD *)
+node button_bad(onoff: bool) returns (isActivated: bool)
+var lastIsActivated: bool;
+let
+	lastIsActivated = false fby isActivated;
+	reset
+		isActivated = (not lastIsActivated) fby isActivated;
+	every onoff;
+tel
+
+
+(* GOOD *)
+node button(onoff: bool) returns (isActivated: bool)
+var auxIsActivated: bool;
+let
+	auxIsActivated = (false fby (if onoff then (not auxIsActivated) else auxIsActivated));
+	isActivated = if onoff
+		then (
+			not auxIsActivated)
+		else (
+			auxIsActivated);
+tel
+
+
+
+
+node detecteur(mvt,onoff,hs: bool) returns (isActivated,alarme: bool)
+
+var 
+
+	(* 1 tick = 10ms *)
+	tick: int;
+	
+	(*isActivated: bool;*)
+	
+let
+
+	isActivated = button(onoff);
+
+	(*
+	   On reset le système à chaque pas d'exécution
+	   si le détecteur d'intrusion n'est pas activé
+	*)
+	reset
+		
+		(*
+		   On remet le tick à zéro si le détecteur de mouvements renvoie false,
+		   ainsi, s'il ne s'est pas écoulé suffisament de temps, l'alarme n'est pas
+		   trigger et le tick est reset
+		*)
+		reset
+		
+			(* tick correspond à la durée de temps écoulée *)
+			tick = (0 fby tick) + (if hs and mvt then 1 else 0);
+			
+		every (not mvt); (* on reset le tick dès qu'il n'y a plus de mouvements *)
+		
+		
+		(*
+		   si le tick atteint 6
+		   ce qui correspond à >50ms, on sonne l'alarme 
+		*)
+		alarme = (tick > 5) or ((tick > 5) fby alarme);
+		
+		
+		
+	every (not isActivated); (* si le détecteur d'intrusion n'est pas activé alors on reset tout le système à zéro *)
+	
+tel
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
