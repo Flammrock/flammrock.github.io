@@ -256,7 +256,25 @@ tel
 
 
 
-
+node detecteur(mvt,onoff,hs: bool) returns (alarme: bool)
+var 
+	tick:int;
+let
+	automaton
+		state Disabled
+			do alarme = false; tick = 0;
+			until onoff then Enabled
+		state Enabled
+			do alarme = false; 
+				reset
+					tick = (0 fby tick) + (if hs and mvt then 1 else 0);
+				every (not mvt)
+			until onoff then Disabled | (tick > 5) then Detected
+		state Detected
+			do alarme = true; tick = 0;
+			until onoff then Disabled
+	end;
+tel
 
 
 
