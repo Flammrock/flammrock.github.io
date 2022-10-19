@@ -1,0 +1,86 @@
+
+
+node detecteur(mvt,onoff,hs: bool) returns (alarme: bool)
+var 
+	tick:int;
+let
+	automaton
+		state Disabled
+			do alarme = false; tick = 0;
+			until onoff then Enabled
+		state Enabled
+			do alarme = false; 
+				reset
+					tick = (0 fby tick) + (if hs and mvt then 1 else 0);
+				every (not mvt)
+			until onoff then Disabled | (tick > 5) then Detected
+		state Detected
+			do alarme = true; tick = 0;
+			until onoff then Disabled
+	end;
+tel
+
+node chrono2(start_stop,rst,hs: bool) returns (last time: int = 0)
+let
+	automaton
+		state Stop
+			do time = if rst then 0 else last time
+			unless start_stop then Running
+		state Running
+			do time = if rst then 0 else if hs then last time + 10 else last time
+			unless start_stop then Stop
+	end;
+tel
+
+node chrono3(start_stop,rst,hs,pause: bool) returns (last time: int = 0)
+var internal_time: int;
+let
+	internal_time = chrono2(start_stop,rst,hs);
+	automaton
+		state Running
+			do time = internal_time
+			unless pause then Paused
+		state Paused
+			do
+			unless pause then Running
+	end;
+tel
+
+
+node chrono2bis(start_stop,rst,hs: bool) returns (last time: int = 0)
+var last internal_time: int = 0;
+	last tmp: bool = false;
+let
+	internal_time = chrono2(start_stop,tmp,hs);
+	automaton
+		state Stop
+			do time = internal_time; tmp = rst
+			unless start_stop continue Running
+		state Running
+			do time = internal_time; tmp = false
+			unless rst continue Paused | start_stop continue Stop
+		state Paused
+			do tmp = false
+			unless rst continue Running
+	end;
+tel
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
