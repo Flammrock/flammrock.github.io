@@ -27,7 +27,7 @@ let
 			do time = if rst then 0 else last time
 			unless start_stop then Running
 		state Running
-			do time = if rst then 0 else if hs then last time + 10 else last time
+			do time = if rst then 0 else if hs then last time + 1000 else last time
 			unless start_stop then Stop
 	end;
 tel
@@ -49,32 +49,76 @@ tel
 
 node chrono2bis(start_stop,rst,hs: bool) returns (last time: int = 0)
 var last internal_time: int = 0;
-	last tmp: bool = false;
+	last internal_rst: bool = false;
 let
-	internal_time = chrono2(start_stop,tmp,hs);
+	internal_time = chrono2(start_stop,internal_rst,hs);
 	automaton
 		state Stop
-			do time = internal_time; tmp = rst
-			unless start_stop continue Running
+			do time = internal_time; internal_rst = rst
+			unless start_stop then Running
 		state Running
-			do time = internal_time; tmp = false
-			unless rst continue Paused | start_stop continue Stop
+			do time = internal_time; internal_rst = false
+			unless rst then Paused | start_stop then Stop
 		state Paused
-			do tmp = false
-			unless rst continue Running
+			do internal_rst = false
+			unless rst then Running
+	end;
+tel
+
+fun timeToHMS(time: int) returns (h,m,s: int)
+let
+	s = (time/1000) % 60;
+	m = (time/(1000*60)) % 60;
+	h = (time/(1000*60*60)) % 24;
+tel
+
+node settings(last_initial_time: int; start_stop,rst: bool) returns (new_initial_time: int)
+let
+	automaton
+		state H
+			do new_initial_time = (if rst then 1000*60*60 else 0) + last_initial_time;
+			unless start_stop then M
+		state M
+			do new_initial_time = (if rst then 1000*60 else 0) + last_initial_time;
+			unless start_stop then S
+		state S
+			do new_initial_time = (if rst then 1000 else 0) + last_initial_time;
+			unless start_stop then H
 	end;
 tel
 
 
+node montre(mode,start_stop,rst,hs,pause:bool) returns (last h: int; last m: int; last s: int)
+var last internal_time: int = 0;
+	last current_time: int = 0;
+	last initial_time: int = 0;
+	internal_pause: bool;
+let
 
+	internal_time = merge internal_pause
+		(last internal_time when internal_pause)
+		(chrono3(true fby false,false,hs,false) whenot internal_pause);
 
+	current_time = initial_time + internal_time;
 
-
-
-
-
-
-
+	automaton
+		state Time
+			do	internal_pause = false;
+				(h,m,s) = timeToHMS(current_time);
+			unless mode then Timer
+		state Timer
+			var t_time: int;
+			do	internal_pause = false;
+				t_time = chrono3(start_stop,rst,hs,pause);
+				(h,m,s) = timeToHMS(t_time);
+			unless mode then Settings
+		state Settings
+			do	internal_pause = true;
+				initial_time = settings(last initial_time,start_stop,rst);
+				(h,m,s) = timeToHMS(current_time);
+			unless mode continue Time
+	end;
+tel
 
 
 
