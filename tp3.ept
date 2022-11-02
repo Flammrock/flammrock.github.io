@@ -1,0 +1,143 @@
+const n: int = 3
+node ring_buffer(e : int; w, r : bool) returns (o : int)
+var r_idx, w_idx : int; pa, a : int^n;
+let
+    o = a.[r_idx] default 0;
+    pa = (0^n) fby a;
+    a = if w then [ pa with [w_idx] = e ] else pa;
+    r_idx = 0 fby (((if r then 1 else 0) + r_idx) % n);
+    w_idx = 0 fby (((if w then 1 else 0) + w_idx) % n);
+tel
+
+
+
+
+node ring_buffer_checked<<n : int>>(e : int; w, r : bool) returns (o : int; of, uf : bool)
+var r_idx, w_idx : int; pa, a : int^n;
+    ir_idx, iw_idx: int;
+let
+    o = a.[r_idx % n] default 0;
+    pa = (0^n) fby a;
+    a = if w then [ pa with [w_idx % n] = e ] else pa;
+    ir_idx = if r then 1 else 0;
+    iw_idx = if w then 1 else 0;
+    r_idx = 0 fby (ir_idx + r_idx);
+    w_idx = 0 fby (iw_idx + w_idx);
+    of = (w_idx+iw_idx - r_idx+ir_idx) > n;
+    uf = r_idx+ir_idx > w_idx+iw_idx;
+tel
+
+node ring_buffer_safe<<n : int>>(e : int; w, r : bool) returns (o : int; of, uf : bool)
+var last r_idx: int = 0;
+    last w_idx: int = 0;
+    pa, a : int^n;
+let
+    o = a.[r_idx % n] default 0;
+    pa = (0^n) fby a;
+    a = if w and not(of) then [ pa with [w_idx % n] = e ] else pa;
+    r_idx = if not(uf) then (if r then 1 else 0) + last r_idx else last r_idx;
+    w_idx = if not(of) then (if w then 1 else 0) + last w_idx else last w_idx;
+    of = (last w_idx+(if w then 1 else 0) - last r_idx) > n;
+    uf = last r_idx+(if r then 1 else 0) > last w_idx+(if w then 1 else 0);
+tel
+
+node main(e : int; w, r : bool) returns (o: int; of, uf : bool)
+let
+    (o,of,uf) = ring_buffer_safe<<3>>(e,w,r);
+tel
+
+
+(* ========================================================================== *)
+
+node hadd(x,y: bool) returns (cout,s: bool)
+let
+	s = (x and not y) or (not x and y);
+	cout = x and y;
+tel
+
+(*
+node fadd(cin,x,y: bool) returns (cout,s: bool)
+var aux: bool;
+let
+	aux = (x and not y) or (not x and y);
+	s = (aux and not cin) or (not aux and cin);
+	cout = (x and y) or (x and cin) or (y and cin);
+tel*)
+
+node fadd(cin,x,y: bool) returns (cout,s: bool)
+var cout1,cout2,s1,s2: bool;
+let
+	(cout1,s1) = hadd(x,y);
+    (cout2,s2) = hadd(s1,cin);
+    cout = cout1 or cout2;
+    s = s2;
+tel
+
+
+node sadd(x,y,cout_in: bool) returns (s,cout_out: bool)
+let
+	(cout_out,s) = fadd(cout_in,x,y);
+tel
+
+
+node addN_u<<n : int>>(a, b : bool^n) returns (s : bool^n; ovf : bool)
+let
+    (s, ovf) = mapfold<<n>>sadd(a,b,false);
+tel
+
+node addN_s_tmp<<n : int>>(a, b : bool^n) returns (s : bool^n; ovf : bool; neg : bool)
+var ovft: bool;
+let
+    (s, ovft) = mapfold<<n>>sadd(a,b,false);
+    neg = s[n-1];
+    ovf =
+        if a[n-1] and b[n-1] and not(s[n-1]) then true
+        else if not(a[n-1]) and not(b[n-1]) and s[n-1] then true
+        else false;
+tel
+
+node addN_s<<n : int>>(a, b : bool^n; cin: bool) returns (s : bool^n; ovf : bool; neg : bool)
+var s1: bool^n;
+    ovf1,ovf2,neg1: bool;
+let
+    (s1,ovf1,neg1) = addN_s_tmp<<n>>(a,b);
+    (s,ovf2,neg) = addN_s_tmp<<n>>(s1,[cin]@(false^(n-1)));
+    ovf = ovf1 or ovf2;
+tel
+
+node negate(a: bool) returns (b: bool)
+let
+    b = if a then false else true;
+tel
+
+node addsubN_s<<n : int>>(a, b : bool^n; cmd : bool) returns (s : bool^n; ovf, neg : bool)
+var last c: bool^n;
+    last st: bool^n;
+    last ovft: bool;
+    last negt: bool;
+let
+    if cmd then
+        c = b;
+    else
+        (st,ovft,negt) = addN_s<<n>>(map<<n>>negate(b),false^n,true);
+        c = st;
+    end;
+    (s,ovf,neg) = addN_s<<n>>(a,c,false);
+tel
+
+const n2: int = 5
+
+const b0: bool = false
+const b1: bool = true
+
+node main2() returns (s : bool^n2; ovf, neg : bool;)
+let
+    (*(s,ovf) = addN_u<<n2>>([true,false,true,false,false],[false,false,true,false,false]);*)
+    (*(s,ovf,neg) = addN_s<<n2>>([b1,b1,b1,b1,b1],[b1,b0,b0,b0,b0],false);*)
+    
+    (s,ovf,neg) = addsubN_s<<n2>>([b1,b0,b1,b1,b0],[b0,b1,b0,b0,b0],false);
+tel
+
+
+
+
