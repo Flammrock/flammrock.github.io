@@ -1,0 +1,29 @@
+{
+  "name": "jdmenubar",
+  "version": "1.0.0",
+  "description": "Desktop Menu Bar",
+  "main": "dist/jdmenubar.js",
+  "style": "dist/jdmenubar.css",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/midstar/jdmenubar.git"
+  },
+  "keywords": [
+    "menu",
+    "bar",
+    "menubar",
+    "desktop",
+    "drop",
+    "down"
+  ],
+  "author": "Joel Midstjärna",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/midstar/jdmenubar/issues"
+  },
+  "homepage": "https://github.com/midstar/jdmenubar#readme"
+}

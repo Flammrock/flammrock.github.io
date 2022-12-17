@@ -1,0 +1,11 @@
+node_modules
+dist
+lib
+test
+tests
+docs
+examples
+tsconfig.json
+package.json
+package-lock.json
+webpack.config.js

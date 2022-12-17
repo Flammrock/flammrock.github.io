@@ -1,0 +1,73 @@
+/**
+ * @file jdmenubar css library.
+ * @copyright Joel Midstjärna 2021
+ */
+
+.jdmenu-bar {
+  display: flex;
+  background-color: var(--jdmenu-bg-color);
+  padding: 0 0 0 0;
+  margin: 0 0 0 4px;
+  user-select: none;
+  align-items: center;
+}
+
+.jdmenu-item {
+  display: flex;
+  align-items: center;
+  padding: 5px 8px;
+  font-family: var(--jdmenu-font-family);
+  font-size: var(--jdmenu-font-size);
+  color: var(--jdmenu-font-color);
+}
+
+.jdmenu-item:hover {
+  background-color: var(--jdmenu-focus-color);
+  cursor: default;
+}
+
+.jdmenu-item-disabled {
+  color: var(--jdmenu-shortcut-color);
+  background-color: var(--jdmenu-bg-color);
+}
+
+.jdmenu-item-disabled:hover {
+  background-color: var(--jdmenu-bg-color);
+}
+
+.jdmenu-bar>.jdmenu-item {
+  display: inline-block;
+}
+
+.jdmenu-submenu {
+  display: none;
+  position: fixed;
+  z-index: 5000;
+  background-color: var(--jdmenu-bg-color);
+  border-color: var(--jdmenu-border-color);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.jdmenu-submenu hr {
+  border-top: 1px solid var(--jdmenu-border-color);
+}
+
+.jdmenu-item>span:nth-child(1) {
+  margin-left: 0;
+  width: calc(var(--jdmenu-font-size) * 1.25);
+  font-size: calc(var(--jdmenu-font-size) * 0.66);
+}
+
+.jdmenu-item>span:nth-child(2) {
+  padding-right: 20px;
+}
+
+.jdmenu-item>span:nth-child(3) {
+  margin-left: auto;
+  color: var(--jdmenu-shortcut-color);
+}
+
+.jdmenu-submenu-symbol {
+  font-size: calc(var(--jdmenu-font-size) * 0.5);
+}

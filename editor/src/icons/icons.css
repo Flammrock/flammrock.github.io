@@ -1,0 +1,75 @@
+/** *******************************************************************************\
+* Copyright (c) 2022 - Lemmy Briot (Flammrock)                                    *
+*                                                                                 *
+* Permission is hereby granted, free of charge, to any person obtaining a copy    *
+* of this software and associated documentation files (the "Software"), to deal   *
+* in the Software without restriction, including without limitation the rights    *
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell       *
+* copies of the Software, and to permit persons to whom the Software is           *
+* furnished to do so, subject to the following conditions:                        *
+*                                                                                 *
+* The above copyright notice and this permission notice shall be included in all  *
+* copies or substantial portions of the Software.                                 *
+*                                                                                 *
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR      *
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        *
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     *
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          *
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   *
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   *
+* SOFTWARE.                                                                       *
+\*********************************************************************************/
+
+@font-face {
+  font-family: "Custom Icons";
+  src: url('./icons.eot');
+  src: url('./icons.eot') format('embedded-opentype'),
+    url('./icons.woff2') format('woff2'),
+    url('./icons.woff') format('woff'),
+    url('./icons.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.custom-icons {
+  font-family: "Custom Icons";
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  line-height: 1;
+  text-rendering: auto
+}
+
+.icons-car-side:before {
+  content: '\E001';
+}
+
+.icons-flag:before {
+  content: '\E002';
+}
+
+.icons-hand:before {
+  content: '\E003';
+}
+
+.icons-kamek:before {
+  content: '\E004';
+}
+
+.icons-road-arc:before {
+  content: '\E005';
+}
+
+.icons-road-line:before {
+  content: '\E006';
+}
+
+.icons-traffic-light:before {
+  content: '\E007';
+}
+
+.icons-up-down-left-right:before {
+  content: '\E008';
+}
